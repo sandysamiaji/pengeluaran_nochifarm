@@ -20,6 +20,8 @@ Route::get('/transaksi/{type}/{id}', [DashboardController::class, 'getTransactio
 Route::get('/pengeluaran', [ExpenseController::class, 'index'])->name('expenses.index');
 Route::get('/pengeluaran/tambah', [ExpenseController::class, 'create'])->name('expenses.create');
 Route::post('/pengeluaran', [ExpenseController::class, 'store'])->name('expenses.store');
+Route::get('/pengeluaran/{id}', [ExpenseController::class, 'show'])->name('expenses.show');
+Route::put('/pengeluaran/{id}', [ExpenseController::class, 'update'])->name('expenses.update');
 Route::delete('/pengeluaran/{id}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
 
 // 4. Laporan Resmi Investor & Export Data

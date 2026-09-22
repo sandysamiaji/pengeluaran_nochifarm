@@ -352,6 +352,110 @@ class ExpenseController extends Controller
     }
 
     /**
+     * Tampilkan Detail Pengeluaran (JSON)
+     */
+    public function show($id)
+    {
+        $expense = Expense::with('user')->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $expense->id,
+                'transaction_code' => $expense->transaction_code,
+                'date' => Carbon::parse($expense->date)->format('Y-m-d'),
+                'display_date' => Carbon::parse($expense->date)->translatedFormat('d F Y'),
+                'category' => $expense->category,
+                'subcategory' => $expense->subcategory,
+                'purpose' => $expense->purpose,
+                'amount' => (float)$expense->amount,
+                'formatted_amount' => 'Rp ' . number_format($expense->amount, 0, ',', '.'),
+                'payment_method' => $expense->payment_method ?? 'Kas Tunai',
+                'notes' => $expense->notes ?? '',
+                'receipt_photo' => $expense->receipt_photo ? asset($expense->receipt_photo) : null,
+                'penginput_username' => $expense->user ? ($expense->user->username ?: $expense->user->name) : 'admin',
+                'penginput_name' => $expense->user ? $expense->user->name : 'Admin Kandang',
+                'penginput_role' => $expense->user ? ($expense->user->role ?? 'Petugas Input') : 'Petugas Kandang',
+            ]
+        ]);
+    }
+
+    /**
+     * Update Pengeluaran
+     */
+    public function update(Request $request, $id)
+    {
+        $expense = Expense::findOrFail($id);
+
+        // Bersihkan nominal dari karakter non-digit jika dikirim berformat 'Rp 350.000'
+        $rawAmount = $request->input('amount');
+        if (is_string($rawAmount)) {
+            $cleanAmount = preg_replace('/[^0-9]/', '', $rawAmount);
+            $request->merge(['amount' => $cleanAmount]);
+        }
+
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'category' => 'required|string|max:100',
+            'subcategory' => 'required|string|max:100',
+            'purpose' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:1',
+            'payment_method' => 'nullable|string|in:Kas Tunai,Transfer Bank',
+            'notes' => 'nullable|string|max:500',
+            'receipt_photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ], [
+            'date.required' => 'Tanggal pengeluaran wajib diisi.',
+            'category.required' => 'Kategori wajib dipilih.',
+            'subcategory.required' => 'Subkategori wajib dipilih.',
+            'purpose.required' => 'Keperluan pengeluaran wajib diisi.',
+            'amount.required' => 'Nominal pengeluaran wajib diisi.',
+            'amount.min' => 'Nominal pengeluaran minimal Rp 1.',
+            'receipt_photo.image' => 'File bukti nota harus berupa gambar.',
+            'receipt_photo.max' => 'Ukuran foto nota maksimal 5 MB.',
+        ]);
+
+        if ($request->hasFile('receipt_photo')) {
+            if ($expense->receipt_photo && file_exists(public_path($expense->receipt_photo))) {
+                @unlink(public_path($expense->receipt_photo));
+            }
+
+            $file = $request->file('receipt_photo');
+            $filename = 'nota_' . date('Ymd_His') . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/expenses'), $filename);
+            $expense->receipt_photo = 'uploads/expenses/' . $filename;
+
+            self::ensureMaxFileSize(public_path($expense->receipt_photo), 100);
+        }
+
+        $expense->date = $validated['date'];
+        $expense->category = $validated['category'];
+        $expense->subcategory = $validated['subcategory'];
+        $expense->purpose = $validated['purpose'];
+        $expense->amount = $validated['amount'];
+        if (isset($validated['payment_method'])) {
+            $expense->payment_method = $validated['payment_method'];
+        }
+        $expense->notes = $validated['notes'] ?? null;
+        $expense->save();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Pengeluaran #{$expense->transaction_code} berhasil diperbarui.",
+                'data' => [
+                    'id' => $expense->id,
+                    'transaction_code' => $expense->transaction_code,
+                    'formatted_amount' => $expense->formatted_amount,
+                    'purpose' => $expense->purpose,
+                    'date' => Carbon::parse($expense->date)->translatedFormat('d F Y'),
+                ]
+            ]);
+        }
+
+        return back()->with('success', "Pengeluaran #{$expense->transaction_code} berhasil diperbarui.");
+    }
+
+    /**
      * Hapus Pengeluaran
      */
     public function destroy($id)

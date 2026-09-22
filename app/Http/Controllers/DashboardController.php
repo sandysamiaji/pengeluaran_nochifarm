@@ -243,6 +243,9 @@ class DashboardController extends Controller
         // 8. Ringkasan Aset & Stok Mengendap di Gudang (Telur, Pakan Layer/Grower, Populasi Sisa Ayam)
         $inventorySummary = WarehouseInventoryService::getInventorySummary();
 
+        // 9. Master Kategori untuk Edit Modal Pengeluaran
+        $categories = ExpenseController::getCategoriesData();
+
         return view('dashboard', compact(
             'totalPemasukan',
             'totalPengeluaran',
@@ -269,7 +272,8 @@ class DashboardController extends Controller
             'chartIncome',
             'chartExpense',
             'waUrl',
-            'inventorySummary'
+            'inventorySummary',
+            'categories'
         ));
     }
 
@@ -343,8 +347,10 @@ class DashboardController extends Controller
                     'subcategory' => $expense->subcategory,
                     'purpose' => $expense->purpose,
                     'amount' => $expense->amount,
+                    'raw_amount' => (float)$expense->amount,
                     'payment_method' => $expense->payment_method ?? 'Kas Tunai',
                     'formatted_amount' => 'Rp ' . number_format($expense->amount, 0, ',', '.'),
+                    'raw_date' => Carbon::parse($expense->date)->format('Y-m-d'),
                     'penginput_username' => $penginputUser ? ($penginputUser->username ?: $penginputUser->name) : 'admin',
                     'penginput_name' => $penginputUser ? $penginputUser->name : 'Admin Kandang',
                     'penginput_role' => $penginputUser ? ($penginputUser->role ?? 'Petugas Input') : 'Petugas Kandang',
@@ -352,6 +358,7 @@ class DashboardController extends Controller
                     'perjalanan_name' => null,
                     'trip_code' => null,
                     'notes' => $expense->notes ?: '-',
+                    'raw_notes' => $expense->notes ?? '',
                     'receipt_photo' => $expense->receipt_photo ? asset($expense->receipt_photo) : null,
                 ],
             ]);

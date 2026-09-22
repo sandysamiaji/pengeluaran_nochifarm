@@ -627,9 +627,10 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- Table Sesuai Permintaan: nomor | semua transaksi | pemasukan | pengeluaran | aksi -->
+    <!-- 1. Tampilan Desktop: Tabel Lengkap (md: ke atas) -->
+    <!-- Nomor | Semua Transaksi | Pemasukan | Pengeluaran | Aksi -->
     <!-- ========================================================================= -->
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+    <div class="hidden md:block bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
         
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
@@ -769,8 +770,12 @@
                                     <i data-lucide="eye" class="w-4 h-4"></i>
                                 </button>
 
-                                <!-- Tombol Hapus (Khusus Pengeluaran) -->
+                                <!-- Tombol Edit & Hapus (Khusus Pengeluaran) -->
                                 @if($trx['type'] === 'pengeluaran')
+                                    <button type="button" onclick="openEditExpenseFromDashboard({{ $trx['id'] }})"
+                                        class="p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 hover:text-amber-800 transition-all active:scale-95" title="Edit Pengeluaran">
+                                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                                    </button>
                                     <button type="button" onclick="confirmDeleteExpense({{ $trx['id'] }}, '{{ $trx['code'] }}')"
                                         class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 transition-all active:scale-95" title="Hapus Pengeluaran">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -821,6 +826,169 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 2. Tampilan Mobile: Modern Card Layout Sesuai Permintaan (< md) -->
+    <!-- Klik card: Detail View | Titik 3: Pengaturan Edit & Hapus -->
+    <!-- ========================================================================= -->
+    <div class="block md:hidden space-y-3">
+        @forelse($allTransactions as $idx => $trx)
+        <div onclick="showTransactionDetailModal('{{ $trx['type'] }}', {{ $trx['id'] }})"
+             class="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs hover:border-slate-300 hover:shadow-sm active:bg-slate-50 transition-all cursor-pointer relative group">
+            
+            <!-- Header Card: Type Badge + Tanggal & Kode + Titik 3 -->
+            <div class="flex items-center justify-between gap-2 mb-2">
+                <div class="flex items-center gap-1.5 flex-wrap min-w-0">
+                    @if($trx['type'] === 'pemasukan')
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-100 text-emerald-800">
+                            <i data-lucide="arrow-down-left" class="w-3 h-3"></i> PEMASUKAN
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-100 text-rose-800">
+                            <i data-lucide="arrow-up-right" class="w-3 h-3"></i> PENGELUARAN
+                        </span>
+                    @endif
+
+                    <span class="text-[11px] text-slate-400 font-medium">&bull; {{ $trx['display_date'] }}</span>
+                    <span class="text-[11px] text-slate-400 font-mono">#{{ $trx['code'] }}</span>
+                </div>
+
+                <!-- Menu Titik 3 (Dropdown Pengaturan: Edit, Hapus, Detail) -->
+                <div class="relative inline-block text-left" onclick="event.stopPropagation()">
+                    <button type="button"
+                        onclick="event.stopPropagation(); toggleDashboardTrxDropdown('dash-drop-{{ $idx }}')"
+                        class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 active:scale-95 transition-all"
+                        title="Pengaturan">
+                        <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                    </button>
+
+                    <div id="dash-drop-{{ $idx }}"
+                         class="hidden dropdown-menu-dash absolute right-0 top-9 z-30 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 text-xs text-slate-700 animate-in fade-in zoom-in-95 duration-100">
+                        <button type="button"
+                            onclick="event.stopPropagation(); closeAllDashboardTrxDropdowns(); showTransactionDetailModal('{{ $trx['type'] }}', {{ $trx['id'] }})"
+                            class="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 font-medium transition-colors">
+                            <i data-lucide="eye" class="w-4 h-4 text-slate-500"></i>
+                            <span>Lihat Detail</span>
+                        </button>
+                        @if($trx['type'] === 'pengeluaran')
+                            <button type="button"
+                                onclick="event.stopPropagation(); closeAllDashboardTrxDropdowns(); openEditExpenseFromDashboard({{ $trx['id'] }})"
+                                class="w-full px-3.5 py-2.5 text-left hover:bg-amber-50 flex items-center gap-2.5 font-medium text-amber-700 transition-colors">
+                                <i data-lucide="pencil" class="w-4 h-4 text-amber-600"></i>
+                                <span>Edit Pengeluaran</span>
+                            </button>
+                            <div class="border-t border-slate-100 my-1"></div>
+                            <button type="button"
+                                onclick="event.stopPropagation(); closeAllDashboardTrxDropdowns(); confirmDeleteExpense({{ $trx['id'] }}, '{{ $trx['code'] }}')"
+                                class="w-full px-3.5 py-2.5 text-left hover:bg-rose-50 flex items-center gap-2.5 font-bold text-rose-600 transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4 text-rose-600"></i>
+                                <span>Hapus Pengeluaran</span>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body Card: Judul / Keperluan & Kategori -->
+            <div class="space-y-1 mb-2.5">
+                <h4 class="font-extrabold text-slate-900 text-sm leading-snug">
+                    {{ $trx['title'] }}
+                </h4>
+                <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+                    <span class="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-[11px]">
+                        {{ $trx['category'] }} @if($trx['subcategory']) &bull; {{ $trx['subcategory'] }} @endif
+                    </span>
+                    @if($trx['description'])
+                        <span class="text-slate-400 truncate max-w-[200px]" title="{{ $trx['description'] }}">&mdash; {{ $trx['description'] }}</span>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Petugas Input & Trip -->
+            <div class="flex flex-wrap items-center gap-1.5 mb-2.5">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200/80 text-[10px] font-medium" title="Diinput oleh: {{ $trx['penginput_name'] }}">
+                    <i data-lucide="user-check" class="w-3 h-3 text-amber-600"></i>
+                    <span class="text-amber-700 font-bold">Input:</span>
+                    <span class="font-bold text-amber-950 font-mono">@<span>{{ $trx['penginput_username'] }}</span></span>
+                </span>
+
+                @if(!empty($trx['perjalanan_username']))
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-sky-50 text-sky-900 border border-sky-200/80 text-[10px] font-medium" title="Petugas Perjalanan: {{ $trx['perjalanan_name'] }} | Rute: {{ $trx['trip_route'] }}">
+                        <i data-lucide="truck" class="w-3 h-3 text-sky-600"></i>
+                        <span class="text-sky-700 font-bold">Trip:</span>
+                        <span class="font-bold text-sky-950 font-mono">@<span>{{ $trx['perjalanan_username'] }}</span></span>
+                    </span>
+                @endif
+            </div>
+
+            <!-- Footer Card: Nota + Nominal -->
+            <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 text-xs">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    @if($trx['receipt_photo'])
+                        <span class="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/60">
+                            <i data-lucide="paperclip" class="w-3 h-3 text-blue-600"></i> Nota
+                        </span>
+                    @endif
+                    <span class="text-[10px] text-slate-400 font-medium">
+                        {{ $trx['payment_method'] ?? 'Kas Tunai' }}
+                    </span>
+                </div>
+
+                <div class="text-right">
+                    @if($trx['type'] === 'pemasukan')
+                        <span class="font-black text-emerald-600 text-sm sm:text-base whitespace-nowrap">
+                            + Rp {{ number_format($trx['pemasukan'], 0, ',', '.') }}
+                        </span>
+                    @else
+                        <span class="font-black text-rose-600 text-sm sm:text-base whitespace-nowrap">
+                            - Rp {{ number_format($trx['pengeluaran'], 0, ',', '.') }}
+                        </span>
+                    @endif
+                </div>
+            </div>
+
+        </div>
+        @empty
+        <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-xs text-center text-slate-400">
+            <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2.5">
+                <i data-lucide="inbox" class="w-6 h-6"></i>
+            </div>
+            <p class="font-bold text-slate-600 text-sm">Belum ada data transaksi ditemukan</p>
+            <p class="text-xs text-slate-400 mt-1">Coba sesuaikan filter rentang tanggal atau kata kunci pencarian Anda.</p>
+            @if($isFilterActive)
+                <div class="mt-4">
+                    <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl shadow-xs">
+                        <span>Reset Filter & Tampilkan Semua</span>
+                    </a>
+                </div>
+            @endif
+        </div>
+        @endforelse
+
+        <!-- Mobile Summary Card -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs space-y-2 text-xs">
+            <div class="font-bold text-slate-700 flex items-center justify-between">
+                <span>Ringkasan Transaksi:</span>
+                <span>{{ count($allTransactions) }} Transaksi</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                <div class="p-2 rounded-xl bg-emerald-50 text-emerald-800">
+                    <span class="text-[10px] uppercase font-bold text-emerald-600 block">Pemasukan</span>
+                    <span class="font-black text-xs sm:text-sm block mt-0.5">+ Rp {{ number_format($totalPemasukan, 0, ',', '.') }}</span>
+                </div>
+                <div class="p-2 rounded-xl bg-rose-50 text-rose-800">
+                    <span class="text-[10px] uppercase font-bold text-rose-600 block">Pengeluaran</span>
+                    <span class="font-black text-xs sm:text-sm block mt-0.5">- Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</span>
+                </div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-50 flex items-center justify-between font-bold">
+                <span class="text-slate-500">Saldo Transaksi:</span>
+                <span class="{{ $saldoSaatIni >= 0 ? 'text-slate-900' : 'text-rose-700' }} font-black text-sm">
+                    Rp {{ number_format($saldoSaatIni, 0, ',', '.') }}
+                </span>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -949,13 +1117,127 @@
         </div>
 
         <!-- Footer -->
-        <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+        <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
+            <div id="modalDetailActions" class="flex items-center gap-1.5">
+                <!-- Tombol Edit & Hapus akan disisipkan jika tipe transaksi adalah pengeluaran -->
+            </div>
             <button type="button" onclick="closeTransactionDetailModal()"
                 class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs transition-colors">
                 Tutup
             </button>
         </div>
 
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- Modal Edit Pengeluaran (Bisa dibuka dari Tabel atau Mobile Card Dashboard) -->
+<!-- ========================================================================= -->
+<div id="editExpenseModalDash" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+    <div class="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 translate-y-12 sm:translate-y-0">
+        
+        <!-- Header -->
+        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
+            <button type="button" onclick="closeEditExpenseModalDash()" class="w-9 h-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="text-center">
+                <h3 class="font-extrabold text-base text-slate-800">Edit Pengeluaran</h3>
+                <p id="editExpCodeBadgeDash" class="text-[11px] font-mono text-slate-400">#EXP-...</p>
+            </div>
+            <div class="w-9"></div>
+        </div>
+
+        <!-- Form Body -->
+        <form id="editExpenseFormDash" onsubmit="submitEditExpenseDash(event)" enctype="multipart/form-data" class="p-5 space-y-4 overflow-y-auto max-h-[75vh]">
+            <input type="hidden" id="edit_expense_id_dash" name="id">
+
+            <!-- 1. Tanggal -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tanggal</label>
+                <input type="date" id="edit_date_dash" name="date" required
+                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
+            </div>
+
+            <!-- 2. Kategori -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Kategori</label>
+                <select id="edit_category_dash" name="category" required onchange="onEditCategoryChangeDash()"
+                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
+                    <option value="">Pilih Kategori</option>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat['name'] }}">{{ $cat['name'] }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- 3. Subkategori -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Subkategori</label>
+                <select id="edit_subcategory_dash" name="subcategory" required
+                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
+                    <option value="">Pilih Subkategori</option>
+                </select>
+            </div>
+
+            <!-- 4. Keperluan -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Keperluan</label>
+                <input type="text" id="edit_purpose_dash" name="purpose" required
+                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
+            </div>
+
+            <!-- 5. Nominal (Rp) -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nominal (Rp)</label>
+                <input type="text" id="edit_amount_dash" name="amount" required inputmode="numeric" oninput="formatRupiahInputDash(this)"
+                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-black text-rose-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
+            </div>
+
+            <!-- 6. Metode Pembayaran -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Metode Pembayaran</label>
+                <select id="edit_payment_method_dash" name="payment_method"
+                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
+                    <option value="Kas Tunai">Kas Tunai</option>
+                    <option value="Transfer Bank">Transfer Bank</option>
+                </select>
+            </div>
+
+            <!-- 7. Catatan / Keterangan -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Catatan / Keterangan (Opsional)</label>
+                <textarea id="edit_notes_dash" name="notes" rows="2"
+                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-normal text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800"></textarea>
+            </div>
+
+            <!-- 8. Foto Nota -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Bukti Foto / Nota (Opsional)</label>
+                <div id="edit_existing_photo_container_dash" class="hidden mb-2">
+                    <span class="text-[11px] text-slate-400 block mb-1">Foto saat ini:</span>
+                    <a id="edit_existing_photo_link_dash" href="#" target="_blank">
+                        <img id="edit_existing_photo_img_dash" src="" alt="Nota" class="h-20 w-auto rounded-lg border border-slate-200 object-cover">
+                    </a>
+                </div>
+                <input type="file" id="edit_receipt_photo_dash" name="receipt_photo" accept="image/*"
+                    class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                <span class="text-[10px] text-slate-400 block mt-1">Kosongkan jika tidak ingin mengubah foto nota.</span>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button type="button" onclick="closeEditExpenseModalDash()"
+                    class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors">
+                    Batal
+                </button>
+                <button type="submit" id="btnSubmitEditExpenseDash"
+                    class="px-5 py-2.5 bg-maroon-800 hover:bg-maroon-900 text-white rounded-xl font-bold text-xs shadow-md transition-colors flex items-center gap-1.5">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Simpan Perubahan</span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -1341,6 +1623,8 @@
 
         title.textContent = type === 'pemasukan' ? 'Detail Transaksi Pemasukan (Omzet)' : 'Detail Transaksi Pengeluaran Kandang';
         content.innerHTML = `<div class="text-center py-8 text-slate-400"><span class="animate-spin inline-block mr-2">&#9696;</span> Memuat detail...</div>`;
+        const initialActions = document.getElementById('modalDetailActions');
+        if (initialActions) initialActions.innerHTML = '';
 
         modal.classList.remove('opacity-0', 'pointer-events-none');
         modal.querySelector('.bg-white').classList.remove('translate-y-12');
@@ -1502,6 +1786,27 @@
                     `;
                 }
 
+                // Action Buttons di Footer Modal Detail Transaksi (Khusus Pengeluaran: Edit & Hapus)
+                const detailActions = document.getElementById('modalDetailActions');
+                if (detailActions) {
+                    if (type === 'pengeluaran') {
+                        detailActions.innerHTML = `
+                            <button type="button" onclick="closeTransactionDetailModal(); openEditExpenseFromDashboard(${d.id});"
+                                class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5">
+                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                <span>Edit</span>
+                            </button>
+                            <button type="button" onclick="closeTransactionDetailModal(); confirmDeleteExpense(${d.id}, '${d.transaction_code}');"
+                                class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                <span>Hapus</span>
+                            </button>
+                        `;
+                    } else {
+                        detailActions.innerHTML = '';
+                    }
+                }
+
                 lucide.createIcons();
             })
             .catch(err => {
@@ -1558,6 +1863,163 @@
                     Swal.fire('Error', 'Gagal memproses penghapusan.', 'error');
                 });
             }
+        });
+    }
+
+    // -------------------------------------------------------------
+    // Dashboard Mobile Dropdown (Titik 3) Controls
+    // -------------------------------------------------------------
+    function toggleDashboardTrxDropdown(id) {
+        const target = document.getElementById(id);
+        const isHidden = target.classList.contains('hidden');
+        closeAllDashboardTrxDropdowns();
+        if (isHidden) {
+            target.classList.remove('hidden');
+        }
+    }
+
+    function closeAllDashboardTrxDropdowns() {
+        document.querySelectorAll('.dropdown-menu-dash').forEach(el => el.classList.add('hidden'));
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown-menu-dash')) {
+            closeAllDashboardTrxDropdowns();
+        }
+    });
+
+    // -------------------------------------------------------------
+    // Edit Pengeluaran Modal dari Dashboard
+    // -------------------------------------------------------------
+    const masterCategoriesDash = @json($categories);
+
+    function formatRupiahInputDash(input) {
+        let val = input.value.replace(/[^0-9]/g, '');
+        if (val) {
+            input.value = 'Rp ' + parseInt(val, 10).toLocaleString('id-ID');
+        } else {
+            input.value = '';
+        }
+    }
+
+    function onEditCategoryChangeDash() {
+        const catName = document.getElementById('edit_category_dash').value;
+        const subcatSelect = document.getElementById('edit_subcategory_dash');
+        subcatSelect.innerHTML = '<option value="">Pilih Subkategori</option>';
+
+        const foundCat = masterCategoriesDash.find(c => c.name === catName);
+        if (foundCat && foundCat.subcategories) {
+            foundCat.subcategories.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub;
+                opt.textContent = sub;
+                subcatSelect.appendChild(opt);
+            });
+        }
+    }
+
+    function openEditExpenseFromDashboard(id) {
+        const modal = document.getElementById('editExpenseModalDash');
+        const codeBadge = document.getElementById('editExpCodeBadgeDash');
+
+        codeBadge.textContent = 'Memuat data...';
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        modal.querySelector('.bg-white').classList.remove('translate-y-12');
+
+        fetch(`/pengeluaran/${id}`)
+            .then(res => res.json())
+            .then(res => {
+                if (!res.success) {
+                    Swal.fire('Error', res.message || 'Gagal memuat data pengeluaran', 'error');
+                    closeEditExpenseModalDash();
+                    return;
+                }
+
+                const d = res.data;
+                codeBadge.textContent = `#${d.transaction_code}`;
+                document.getElementById('edit_expense_id_dash').value = d.id;
+                document.getElementById('edit_date_dash').value = d.date;
+                document.getElementById('edit_purpose_dash').value = d.purpose;
+                document.getElementById('edit_amount_dash').value = 'Rp ' + Math.round(d.amount).toLocaleString('id-ID');
+                document.getElementById('edit_payment_method_dash').value = d.payment_method || 'Kas Tunai';
+                document.getElementById('edit_notes_dash').value = d.notes || '';
+
+                document.getElementById('edit_category_dash').value = d.category;
+                onEditCategoryChangeDash();
+                document.getElementById('edit_subcategory_dash').value = d.subcategory;
+
+                const photoCont = document.getElementById('edit_existing_photo_container_dash');
+                const photoImg = document.getElementById('edit_existing_photo_img_dash');
+                const photoLink = document.getElementById('edit_existing_photo_link_dash');
+                if (d.receipt_photo) {
+                    photoImg.src = d.receipt_photo;
+                    photoLink.href = d.receipt_photo;
+                    photoCont.classList.remove('hidden');
+                } else {
+                    photoCont.classList.add('hidden');
+                }
+
+                document.getElementById('edit_receipt_photo_dash').value = '';
+                lucide.createIcons();
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', 'Gagal memuat data pengeluaran untuk diedit.', 'error');
+                closeEditExpenseModalDash();
+            });
+    }
+
+    function closeEditExpenseModalDash() {
+        const modal = document.getElementById('editExpenseModalDash');
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        modal.querySelector('.bg-white').classList.add('translate-y-12');
+    }
+
+    function submitEditExpenseDash(e) {
+        e.preventDefault();
+        const id = document.getElementById('edit_expense_id_dash').value;
+        const form = document.getElementById('editExpenseFormDash');
+        const formData = new FormData(form);
+        formData.append('_method', 'PUT');
+
+        const btn = document.getElementById('btnSubmitEditExpenseDash');
+        const origBtnText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<span class="animate-spin mr-1.5">&#9696;</span> Menyimpan...`;
+
+        fetch(`/pengeluaran/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(res => {
+            btn.disabled = false;
+            btn.innerHTML = origBtnText;
+
+            if (res.success) {
+                closeEditExpenseModalDash();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil Diperbarui',
+                    text: res.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire('Gagal', res.message || 'Terjadi kesalahan saat menyimpan perubahan.', 'error');
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = origBtnText;
+            console.error(err);
+            Swal.fire('Error', 'Gagal memproses perubahan.', 'error');
         });
     }
 
