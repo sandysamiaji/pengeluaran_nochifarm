@@ -260,7 +260,7 @@ class ExpenseController extends Controller
             });
         }
 
-        $expenses = $query->paginate(20)->withQueryString();
+        $expenses = $query->paginate(10)->withQueryString();
         $totalNominal = (clone $query)->sum('amount');
         $categories = self::getCategoriesData();
 

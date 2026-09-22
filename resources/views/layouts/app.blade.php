@@ -151,6 +151,10 @@
                         <i data-lucide="receipt" class="w-4 h-4"></i>
                         <span>Riwayat Pengeluaran</span>
                     </a>
+                    <a href="{{ route('production.index') }}" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('production.*') ? 'bg-white text-maroon-900 shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
+                        <i data-lucide="egg" class="w-4 h-4"></i>
+                        <span>Produksi Telur</span>
+                    </a>
                     <a href="{{ route('master.templates.index') }}" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('master.templates.*') ? 'bg-white text-maroon-900 shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
                         <i data-lucide="settings" class="w-4 h-4"></i>
                         <span>Master Template</span>
@@ -193,6 +197,10 @@
                 <i data-lucide="home" class="w-5 h-5 text-maroon-700"></i>
                 <span>Beranda & Transaksi</span>
             </a>
+            <a href="{{ route('production.index') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold {{ request()->routeIs('production.*') ? 'bg-rose-50 text-maroon-800' : 'text-slate-700 hover:bg-slate-50' }}">
+                <i data-lucide="egg" class="w-5 h-5 text-amber-600"></i>
+                <span>Produksi Telur</span>
+            </a>
             <a href="{{ route('expenses.create') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold {{ request()->routeIs('expenses.create') ? 'bg-orange-50 text-nochi-orange' : 'text-slate-700 hover:bg-slate-50' }}">
                 <i data-lucide="plus-circle" class="w-5 h-5 text-nochi-orange"></i>
                 <span>Catat Pengeluaran Kandang</span>
@@ -204,21 +212,6 @@
             <a href="{{ route('master.templates.index') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold {{ request()->routeIs('master.templates.*') ? 'bg-rose-50 text-maroon-800' : 'text-slate-700 hover:bg-slate-50' }}">
                 <i data-lucide="settings" class="w-5 h-5 text-maroon-700"></i>
                 <span>Master Template Pengeluaran</span>
-            </a>
-            <hr class="my-3 border-slate-100">
-            <div class="px-3.5 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Aplikasi Terintegrasi</div>
-            <a href="http://127.0.0.1:8000" target="_blank" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50">
-                <span class="flex items-center gap-2.5">
-                    <i data-lucide="arrow-up-right" class="w-4 h-4 text-emerald-600"></i>
-                    <span>Nochi Fram (Penjualan / Omzet)</span>
-                </span>
-                <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">Realtime</span>
-            </a>
-            <a href="http://localhost/ayam/nochifarminput/public" target="_blank" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50">
-                <span class="flex items-center gap-2.5">
-                    <i data-lucide="egg" class="w-4 h-4 text-amber-600"></i>
-                    <span>Nochi Farm Input (Produksi)</span>
-                </span>
             </a>
         </div>
         <div class="p-4 border-t border-slate-100 bg-slate-50 text-center">
@@ -259,8 +252,13 @@
             </a>
 
             <!-- 2. Produksi -->
-            <a href="http://localhost/ayam/nochifarminput/public" target="_blank" class="flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-600 font-medium transition-transform active:scale-95">
-                <i data-lucide="egg" class="w-5 h-5 stroke-2"></i>
+            <a href="{{ route('production.index') }}" class="flex flex-col items-center justify-center py-1 {{ request()->routeIs('production.*') ? 'text-nochi-orange font-bold' : 'text-slate-400 hover:text-slate-600 font-medium' }} transition-transform active:scale-95">
+                <div class="relative">
+                    <i data-lucide="egg" class="w-5 h-5 {{ request()->routeIs('production.*') ? 'stroke-[2.5]' : 'stroke-2' }}"></i>
+                    @if(request()->routeIs('production.*'))
+                        <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-nochi-orange rounded-full"></span>
+                    @endif
+                </div>
                 <span class="text-[10px] mt-1">Produksi</span>
             </a>
 

@@ -36,4 +36,9 @@ Route::put('/master/templates/{id}', [MasterTemplateController::class, 'update']
 Route::post('/master/templates/{id}/toggle', [MasterTemplateController::class, 'toggle'])->name('master.templates.toggle');
 Route::delete('/master/templates/{id}', [MasterTemplateController::class, 'destroy'])->name('master.templates.destroy');
 
+// 6. Data Produksi Telur (Sinkronisasi Hasil Input Kandang)
+use App\Http\Controllers\ProductionController;
+Route::get('/produksi', [ProductionController::class, 'index'])->name('production.index');
+Route::get('/produksi/{id}', [ProductionController::class, 'show'])->name('production.show');
+
 

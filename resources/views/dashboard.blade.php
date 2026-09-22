@@ -644,12 +644,12 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">
-                    @forelse($allTransactions as $idx => $trx)
+                    @forelse($paginatedTransactions as $idx => $trx)
                     <tr class="hover:bg-slate-50/70 transition-colors group">
                         
                         <!-- 1. Nomor -->
                         <td class="py-4 px-4 text-center text-slate-400 font-bold text-xs">
-                            {{ $idx + 1 }}
+                            {{ $paginatedTransactions->firstItem() + $idx }}
                         </td>
 
                         <!-- 2. Semua Transaksi -->
@@ -826,6 +826,12 @@
             </div>
         </div>
 
+        @if($paginatedTransactions->hasPages())
+            <div class="p-4 bg-slate-50 border-t border-slate-100">
+                {{ $paginatedTransactions->links() }}
+            </div>
+        @endif
+
     </div>
 
     <!-- ========================================================================= -->
@@ -833,7 +839,7 @@
     <!-- Klik card: Detail View | Titik 3: Pengaturan Edit & Hapus -->
     <!-- ========================================================================= -->
     <div class="block md:hidden space-y-3">
-        @forelse($allTransactions as $idx => $trx)
+        @forelse($paginatedTransactions as $idx => $trx)
         <div onclick="showTransactionDetailModal('{{ $trx['type'] }}', {{ $trx['id'] }})"
              class="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs hover:border-slate-300 hover:shadow-sm active:bg-slate-50 transition-all cursor-pointer relative group">
             
@@ -989,6 +995,12 @@
                 </span>
             </div>
         </div>
+
+        @if($paginatedTransactions->hasPages())
+            <div class="p-4 bg-white rounded-2xl border border-slate-100 shadow-xs">
+                {{ $paginatedTransactions->links() }}
+            </div>
+        @endif
     </div>
 
 </div>

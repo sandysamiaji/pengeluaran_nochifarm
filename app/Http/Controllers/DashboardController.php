@@ -168,6 +168,18 @@ class DashboardController extends Controller
             return $item['datetime'] . '_' . str_pad($item['id'], 8, '0', STR_PAD_LEFT);
         })->values();
 
+        // Paginate Transaksi 10 per Halaman Sesuai Permintaan
+        $perPage = 10;
+        $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage('page');
+        $currentItems = $allTransactions->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $paginatedTransactions = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentItems,
+            $allTransactions->count(),
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         // 5. Data Chart: Rekapitulasi per Kategori Pengeluaran (Donut Chart)
         $categoryBreakdown = $expenses->groupBy('category')->map(function ($items, $cat) use ($totalPengeluaran) {
             $total = $items->sum('amount');
@@ -254,6 +266,7 @@ class DashboardController extends Controller
             'countExpenses',
             'totalTransaksi',
             'allTransactions',
+            'paginatedTransactions',
             'startDate',
             'endDate',
             'isFilterActive',
