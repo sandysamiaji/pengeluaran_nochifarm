@@ -238,6 +238,8 @@ class DashboardController extends Controller
         $waText .= "------------------------------------\n";
         $waText .= "_Laporan real-time resmi dari Sistem Nochi Farm_";
 
+        $waUrl = "https://wa.me/?text=" . urlencode($waText);
+
         // 8. Ringkasan Aset & Stok Mengendap di Gudang (Telur, Pakan Layer/Grower, Populasi Sisa Ayam)
         $inventorySummary = WarehouseInventoryService::getInventorySummary();
 
