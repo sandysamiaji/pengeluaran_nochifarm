@@ -178,7 +178,7 @@ class WarehouseInventoryService
                     ->value('sale_items.price');
                 if ($lastSalePeti) $hargaPeti = (float) $lastSalePeti;
             }
-            if ($hargaPeti <= 0) $hargaPeti = 280000; // Acuan standar per peti
+            if ($hargaPeti <= 0) $hargaPeti = 225000; // Default acuan per peti
 
             if ($hargaKg <= 0 && Schema::hasTable('sale_items')) {
                 $lastSaleKg = DB::table('sale_items')
@@ -190,18 +190,23 @@ class WarehouseInventoryService
                     ->value('sale_items.price');
                 if ($lastSaleKg) $hargaKg = (float) $lastSaleKg;
             }
-            if ($hargaKg <= 0) $hargaKg = round($hargaPeti / 10); // Acuan standar 1 kg
+            if ($hargaKg <= 0) $hargaKg = round($hargaPeti / 10); // Acuan standar 1 kg (1 Peti = 10 Kg)
 
-            // I. Estimasi Nilai Stok Telur Mengendap
-            $estimasiNilai = max(0, ($currentStockPeti * $hargaPeti) + ($currentStockKg * $hargaKg));
+            // I. Estimasi Nilai Stok Telur Mengendap: (X Peti × Harga Peti) + (Y Kg × Harga Kg)
+            $isDefisit = ($netTotalKg < 0);
+            $estimasiNilai = ($currentStockPeti * $hargaPeti) + ($currentStockKg * $hargaKg);
+            $formulaText = "({$currentStockPeti} Peti × Rp " . number_format($hargaPeti, 0, ',', '.') . ") + ({$currentStockKg} Kg × Rp " . number_format($hargaKg, 0, ',', '.') . ")";
 
             return [
                 'stok_peti' => $currentStockPeti,
                 'stok_kg' => $currentStockKg,
                 'net_total_kg' => $netTotalKg,
+                'is_defisit' => $isDefisit,
                 'harga_peti' => $hargaPeti,
                 'harga_kg' => $hargaKg,
                 'estimasi_nilai' => $estimasiNilai,
+                'estimasi_nilai_abs' => abs($estimasiNilai),
+                'formula_text' => $formulaText,
                 'total_masuk_peti' => $totalMasukPeti,
                 'total_masuk_kg' => $totalMasukKg,
                 'total_keluar_peti' => $totalKeluarPeti,

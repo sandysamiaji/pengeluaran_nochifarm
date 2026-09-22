@@ -205,26 +205,44 @@
                         </div>
                     </div>
                     <div class="mt-2.5">
-                        <span class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight block">
-                            {{ number_format($inventorySummary['telur']['stok_peti'] ?? 0, 0, ',', '.') }} <span class="text-base font-bold text-amber-700">Peti</span>
-                            @if(($inventorySummary['telur']['stok_kg'] ?? 0) > 0)
-                                <span class="text-xs font-semibold text-slate-500">+ {{ $inventorySummary['telur']['stok_kg'] }} Kg</span>
+                        <div class="text-xl sm:text-2xl font-black {{ ($inventorySummary['telur']['is_defisit'] ?? false) ? 'text-rose-600' : 'text-slate-900' }} tracking-tight flex flex-wrap items-baseline gap-1.5">
+                            <span>{{ number_format($inventorySummary['telur']['stok_peti'] ?? 0, 0, ',', '.') }} <span class="text-base font-bold text-amber-700">Peti</span></span>
+                            @if(($inventorySummary['telur']['stok_kg'] ?? 0) != 0)
+                                <span class="text-sm font-bold {{ ($inventorySummary['telur']['stok_kg'] ?? 0) < 0 ? 'text-rose-500' : 'text-slate-600' }}">
+                                    + {{ ($inventorySummary['telur']['stok_kg'] ?? 0) == floor($inventorySummary['telur']['stok_kg'] ?? 0) ? number_format($inventorySummary['telur']['stok_kg'] ?? 0, 0, ',', '.') : number_format($inventorySummary['telur']['stok_kg'] ?? 0, 1, ',', '.') }} Kg
+                                </span>
                             @endif
-                        </span>
+                        </div>
                     </div>
-                    <!-- Estimasi Nilai Penjualan Telur -->
+                    <!-- Estimasi Nilai Penjualan Telur: (x Peti + x Kg) -->
                     <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
-                        <span class="text-amber-900 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70 font-bold" title="Estimasi Nilai Stok Telur Mengendap">
-                            Est: Rp {{ number_format($inventorySummary['telur']['estimasi_nilai'] ?? 0, 0, ',', '.') }}
-                        </span>
-                        <span class="text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70" title="Total Bobot">
+                        @if(($inventorySummary['telur']['is_defisit'] ?? false))
+                            <span class="text-rose-800 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200 font-bold" title="{{ $inventorySummary['telur']['formula_text'] ?? '' }}">
+                                Est: -Rp {{ number_format($inventorySummary['telur']['estimasi_nilai_abs'] ?? 0, 0, ',', '.') }} <span class="font-normal text-[10px] text-rose-600">(Defisit)</span>
+                            </span>
+                        @else
+                            <span class="text-amber-900 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70 font-bold" title="{{ $inventorySummary['telur']['formula_text'] ?? '' }}">
+                                Est: Rp {{ number_format($inventorySummary['telur']['estimasi_nilai'] ?? 0, 0, ',', '.') }}
+                            </span>
+                        @endif
+                        <span class="text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70" title="Total Bobot Riil di Gudang">
                             {{ number_format($inventorySummary['telur']['net_total_kg'] ?? 0, 1, ',', '.') }} Kg Telur
                         </span>
+                    </div>
+
+                    <!-- Formula Perhitungan: (X Peti × Harga Peti) + (Y Kg × Harga Kg) -->
+                    <div class="mt-2 p-1.5 rounded-lg bg-amber-50/60 border border-amber-100 text-[10px] text-amber-950/80 leading-snug">
+                        <span class="font-bold text-amber-900">Hitungan:</span> 
+                        ({{ $inventorySummary['telur']['stok_peti'] ?? 0 }} Peti &times; {{ number_format($inventorySummary['telur']['harga_peti'] ?? 0, 0, ',', '.') }}) + 
+                        ({{ $inventorySummary['telur']['stok_kg'] ?? 0 }} Kg &times; {{ number_format($inventorySummary['telur']['harga_kg'] ?? 0, 0, ',', '.') }})
                     </div>
                 </div>
                 <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                     <span>Harga Master Harian</span>
-                    <span class="font-bold text-slate-700">Rp {{ number_format($inventorySummary['telur']['harga_peti'] ?? 0, 0, ',', '.') }}/Peti</span>
+                    <span class="font-bold text-slate-700 text-right">
+                        Rp {{ number_format($inventorySummary['telur']['harga_peti'] ?? 0, 0, ',', '.') }}/Peti 
+                        <span class="text-amber-700 font-semibold">+ Rp {{ number_format($inventorySummary['telur']['harga_kg'] ?? 0, 0, ',', '.') }}/Kg</span>
+                    </span>
                 </div>
             </div>
 
