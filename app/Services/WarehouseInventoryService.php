@@ -421,10 +421,36 @@ class WarehouseInventoryService
             }
             if ($hargaGrowerPerKarung <= 0) $hargaGrowerPerKarung = 395000; // Standar pakan grower per sak
 
-            // G. Estimasi Nilai Stok Pakan Mengendap
-            $estimasiNilaiLayer = max(0, $currentStockKarungLayer) * $hargaLayerPerKarung;
-            $estimasiNilaiGrower = max(0, $currentStockKarungGrower) * $hargaGrowerPerKarung;
+            // G. Konversi Stok Pakan ke Karung Bulat + Sisa Kg (Sama seperti Peti + Kg pada Telur)
+            if ($currentStockKgLayer >= 0) {
+                $layerKarungBulat = (int) floor($currentStockKgLayer / $kgPerKarung);
+                $layerSisaKg = round($currentStockKgLayer - ($layerKarungBulat * $kgPerKarung), 1);
+            } else {
+                $absKg = abs($currentStockKgLayer);
+                $layerKarungBulat = - (int) floor($absKg / $kgPerKarung);
+                $layerSisaKg = - round($absKg - (abs($layerKarungBulat) * $kgPerKarung), 1);
+            }
+
+            if ($currentStockKgGrower >= 0) {
+                $growerKarungBulat = (int) floor($currentStockKgGrower / $kgPerKarung);
+                $growerSisaKg = round($currentStockKgGrower - ($growerKarungBulat * $kgPerKarung), 1);
+            } else {
+                $absKg = abs($currentStockKgGrower);
+                $growerKarungBulat = - (int) floor($absKg / $kgPerKarung);
+                $growerSisaKg = - round($absKg - (abs($growerKarungBulat) * $kgPerKarung), 1);
+            }
+
+            // Harga prorata per Kg pakan (Harga 1 Karung / kg_per_karung)
+            $hargaLayerPerKg = $kgPerKarung > 0 ? round($hargaLayerPerKarung / $kgPerKarung) : 0;
+            $hargaGrowerPerKg = $kgPerKarung > 0 ? round($hargaGrowerPerKarung / $kgPerKarung) : 0;
+
+            // Estimasi Nilai Stok Pakan Mengendap: (X Krg × Harga Krg) + (Y Kg × Harga Kg)
+            $estimasiNilaiLayer = ($layerKarungBulat * $hargaLayerPerKarung) + ($layerSisaKg * $hargaLayerPerKg);
+            $estimasiNilaiGrower = ($growerKarungBulat * $hargaGrowerPerKarung) + ($growerSisaKg * $hargaGrowerPerKg);
             $totalEstimasiNilai = $estimasiNilaiLayer + $estimasiNilaiGrower;
+
+            $formulaTextLayer = "({$layerKarungBulat} Krg × Rp " . number_format($hargaLayerPerKarung, 0, ',', '.') . ") + ({$layerSisaKg} Kg × Rp " . number_format($hargaLayerPerKg, 0, ',', '.') . ")";
+            $formulaTextGrower = "({$growerKarungBulat} Krg × Rp " . number_format($hargaGrowerPerKarung, 0, ',', '.') . ") + ({$growerSisaKg} Kg × Rp " . number_format($hargaGrowerPerKg, 0, ',', '.') . ")";
 
             return [
                 'total_stok_karung' => $currentStockKarung,
@@ -433,16 +459,28 @@ class WarehouseInventoryService
                 'kg_per_karung' => $kgPerKarung,
 
                 // Layer
+                'layer_karung_bulat' => $layerKarungBulat,
+                'layer_sisa_kg' => $layerSisaKg,
                 'layer_stok_karung' => $currentStockKarungLayer,
                 'layer_stok_kg' => $currentStockKgLayer,
                 'layer_harga_karung' => $hargaLayerPerKarung,
+                'layer_harga_kg' => $hargaLayerPerKg,
                 'layer_estimasi_nilai' => $estimasiNilaiLayer,
+                'layer_estimasi_nilai_abs' => abs($estimasiNilaiLayer),
+                'layer_formula_text' => $formulaTextLayer,
+                'layer_is_defisit' => $currentStockKgLayer < 0,
 
                 // Grower
+                'grower_karung_bulat' => $growerKarungBulat,
+                'grower_sisa_kg' => $growerSisaKg,
                 'grower_stok_karung' => $currentStockKarungGrower,
                 'grower_stok_kg' => $currentStockKgGrower,
                 'grower_harga_karung' => $hargaGrowerPerKarung,
+                'grower_harga_kg' => $hargaGrowerPerKg,
                 'grower_estimasi_nilai' => $estimasiNilaiGrower,
+                'grower_estimasi_nilai_abs' => abs($estimasiNilaiGrower),
+                'grower_formula_text' => $formulaTextGrower,
+                'grower_is_defisit' => $currentStockKgGrower < 0,
             ];
         } catch (\Exception $e) {
             return [

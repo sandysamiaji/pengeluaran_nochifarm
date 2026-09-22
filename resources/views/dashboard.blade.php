@@ -256,24 +256,44 @@
                         </div>
                     </div>
                     <div class="mt-2.5">
-                        <span class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight block">
-                            {{ number_format($inventorySummary['pakan']['layer_stok_karung'] ?? 0, 1, ',', '.') }} <span class="text-base font-bold text-emerald-700">Krg</span>
-                            <span class="text-xs font-semibold text-slate-500">({{ number_format($inventorySummary['pakan']['layer_stok_kg'] ?? 0, 0, ',', '.') }} Kg)</span>
+                        <div class="text-xl sm:text-2xl font-black {{ ($inventorySummary['pakan']['layer_is_defisit'] ?? false) ? 'text-rose-600' : 'text-slate-900' }} tracking-tight flex flex-wrap items-baseline gap-1.5">
+                            <span>{{ number_format($inventorySummary['pakan']['layer_karung_bulat'] ?? 0, 0, ',', '.') }} <span class="text-base font-bold text-emerald-700">Krg</span></span>
+                            @if(($inventorySummary['pakan']['layer_sisa_kg'] ?? 0) != 0)
+                                <span class="text-sm font-bold {{ ($inventorySummary['pakan']['layer_sisa_kg'] ?? 0) < 0 ? 'text-rose-500' : 'text-slate-600' }}">
+                                    + {{ ($inventorySummary['pakan']['layer_sisa_kg'] ?? 0) == floor($inventorySummary['pakan']['layer_sisa_kg'] ?? 0) ? number_format($inventorySummary['pakan']['layer_sisa_kg'] ?? 0, 0, ',', '.') : number_format($inventorySummary['pakan']['layer_sisa_kg'] ?? 0, 1, ',', '.') }} Kg
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                    <!-- Estimasi Nilai Pakan Layer: (x Krg + x Kg) -->
+                    <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                        @if(($inventorySummary['pakan']['layer_is_defisit'] ?? false))
+                            <span class="text-rose-800 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200 font-bold" title="{{ $inventorySummary['pakan']['layer_formula_text'] ?? '' }}">
+                                Est: -Rp {{ number_format($inventorySummary['pakan']['layer_estimasi_nilai_abs'] ?? 0, 0, ',', '.') }} <span class="font-normal text-[10px] text-rose-600">(Defisit)</span>
+                            </span>
+                        @else
+                            <span class="text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/70 font-bold" title="{{ $inventorySummary['pakan']['layer_formula_text'] ?? '' }}">
+                                Est: Rp {{ number_format($inventorySummary['pakan']['layer_estimasi_nilai'] ?? 0, 0, ',', '.') }}
+                            </span>
+                        @endif
+                        <span class="text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70" title="Total Bobot Pakan Layer">
+                            {{ number_format($inventorySummary['pakan']['layer_stok_kg'] ?? 0, 0, ',', '.') }} Kg ({{ $inventorySummary['pakan']['kg_per_karung'] ?? 50 }} Kg/Krg)
                         </span>
                     </div>
-                    <!-- Estimasi Nilai Pakan Layer -->
-                    <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
-                        <span class="text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/70 font-bold" title="Estimasi Nilai Stok Pakan Layer">
-                            Est: Rp {{ number_format($inventorySummary['pakan']['layer_estimasi_nilai'] ?? 0, 0, ',', '.') }}
-                        </span>
-                        <span class="text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70">
-                            {{ $inventorySummary['pakan']['kg_per_karung'] ?? 50 }} Kg/Krg
-                        </span>
+
+                    <!-- Formula Perhitungan: (X Krg × Harga Krg) + (Y Kg × Harga Kg) -->
+                    <div class="mt-2 p-1.5 rounded-lg bg-emerald-50/60 border border-emerald-100 text-[10px] text-emerald-950/80 leading-snug">
+                        <span class="font-bold text-emerald-900">Hitungan:</span> 
+                        ({{ $inventorySummary['pakan']['layer_karung_bulat'] ?? 0 }} Krg &times; {{ number_format($inventorySummary['pakan']['layer_harga_karung'] ?? 0, 0, ',', '.') }}) + 
+                        ({{ $inventorySummary['pakan']['layer_sisa_kg'] ?? 0 }} Kg &times; {{ number_format($inventorySummary['pakan']['layer_harga_kg'] ?? 0, 0, ',', '.') }})
                     </div>
                 </div>
                 <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                     <span>Harga Jual Pakan</span>
-                    <span class="font-bold text-slate-700">Rp {{ number_format($inventorySummary['pakan']['layer_harga_karung'] ?? 0, 0, ',', '.') }}/Krg</span>
+                    <span class="font-bold text-slate-700 text-right">
+                        Rp {{ number_format($inventorySummary['pakan']['layer_harga_karung'] ?? 0, 0, ',', '.') }}/Krg
+                        <span class="text-emerald-700 font-semibold">(+ Rp {{ number_format($inventorySummary['pakan']['layer_harga_kg'] ?? 0, 0, ',', '.') }}/Kg)</span>
+                    </span>
                 </div>
             </div>
 
@@ -287,24 +307,44 @@
                         </div>
                     </div>
                     <div class="mt-2.5">
-                        <span class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight block">
-                            {{ number_format($inventorySummary['pakan']['grower_stok_karung'] ?? 0, 1, ',', '.') }} <span class="text-base font-bold text-sky-700">Krg</span>
-                            <span class="text-xs font-semibold text-slate-500">({{ number_format($inventorySummary['pakan']['grower_stok_kg'] ?? 0, 0, ',', '.') }} Kg)</span>
+                        <div class="text-xl sm:text-2xl font-black {{ ($inventorySummary['pakan']['grower_is_defisit'] ?? false) ? 'text-rose-600' : 'text-slate-900' }} tracking-tight flex flex-wrap items-baseline gap-1.5">
+                            <span>{{ number_format($inventorySummary['pakan']['grower_karung_bulat'] ?? 0, 0, ',', '.') }} <span class="text-base font-bold text-sky-700">Krg</span></span>
+                            @if(($inventorySummary['pakan']['grower_sisa_kg'] ?? 0) != 0)
+                                <span class="text-sm font-bold {{ ($inventorySummary['pakan']['grower_sisa_kg'] ?? 0) < 0 ? 'text-rose-500' : 'text-slate-600' }}">
+                                    + {{ ($inventorySummary['pakan']['grower_sisa_kg'] ?? 0) == floor($inventorySummary['pakan']['grower_sisa_kg'] ?? 0) ? number_format($inventorySummary['pakan']['grower_sisa_kg'] ?? 0, 0, ',', '.') : number_format($inventorySummary['pakan']['grower_sisa_kg'] ?? 0, 1, ',', '.') }} Kg
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                    <!-- Estimasi Nilai Pakan Grower: (x Krg + x Kg) -->
+                    <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                        @if(($inventorySummary['pakan']['grower_is_defisit'] ?? false))
+                            <span class="text-rose-800 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200 font-bold" title="{{ $inventorySummary['pakan']['grower_formula_text'] ?? '' }}">
+                                Est: -Rp {{ number_format($inventorySummary['pakan']['grower_estimasi_nilai_abs'] ?? 0, 0, ',', '.') }} <span class="font-normal text-[10px] text-rose-600">(Defisit)</span>
+                            </span>
+                        @else
+                            <span class="text-sky-900 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200/70 font-bold" title="{{ $inventorySummary['pakan']['grower_formula_text'] ?? '' }}">
+                                Est: Rp {{ number_format($inventorySummary['pakan']['grower_estimasi_nilai'] ?? 0, 0, ',', '.') }}
+                            </span>
+                        @endif
+                        <span class="text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70" title="Total Bobot Pakan Grower">
+                            {{ number_format($inventorySummary['pakan']['grower_stok_kg'] ?? 0, 0, ',', '.') }} Kg ({{ $inventorySummary['pakan']['kg_per_karung'] ?? 50 }} Kg/Krg)
                         </span>
                     </div>
-                    <!-- Estimasi Nilai Pakan Grower -->
-                    <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
-                        <span class="text-sky-900 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200/70 font-bold" title="Estimasi Nilai Stok Pakan Grower">
-                            Est: Rp {{ number_format($inventorySummary['pakan']['grower_estimasi_nilai'] ?? 0, 0, ',', '.') }}
-                        </span>
-                        <span class="text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70">
-                            Total: {{ number_format($inventorySummary['pakan']['total_stok_karung'] ?? 0, 1, ',', '.') }} Krg
-                        </span>
+
+                    <!-- Formula Perhitungan: (X Krg × Harga Krg) + (Y Kg × Harga Kg) -->
+                    <div class="mt-2 p-1.5 rounded-lg bg-sky-50/60 border border-sky-100 text-[10px] text-sky-950/80 leading-snug">
+                        <span class="font-bold text-sky-900">Hitungan:</span> 
+                        ({{ $inventorySummary['pakan']['grower_karung_bulat'] ?? 0 }} Krg &times; {{ number_format($inventorySummary['pakan']['grower_harga_karung'] ?? 0, 0, ',', '.') }}) + 
+                        ({{ $inventorySummary['pakan']['grower_sisa_kg'] ?? 0 }} Kg &times; {{ number_format($inventorySummary['pakan']['grower_harga_kg'] ?? 0, 0, ',', '.') }})
                     </div>
                 </div>
                 <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                     <span>Harga Jual Pakan</span>
-                    <span class="font-bold text-slate-700">Rp {{ number_format($inventorySummary['pakan']['grower_harga_karung'] ?? 0, 0, ',', '.') }}/Krg</span>
+                    <span class="font-bold text-slate-700 text-right">
+                        Rp {{ number_format($inventorySummary['pakan']['grower_harga_karung'] ?? 0, 0, ',', '.') }}/Krg
+                        <span class="text-sky-700 font-semibold">(+ Rp {{ number_format($inventorySummary['pakan']['grower_harga_kg'] ?? 0, 0, ',', '.') }}/Kg)</span>
+                    </span>
                 </div>
             </div>
 
