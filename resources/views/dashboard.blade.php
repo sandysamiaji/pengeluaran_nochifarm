@@ -58,24 +58,34 @@
     <!-- Financial Metric Summary Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        <!-- 1. Saldo Saat Ini (Hero Card) -->
-        <div class="bg-gradient-to-br from-slate-900 via-maroon-950 to-maroon-900 text-white rounded-2xl p-5 shadow-md relative overflow-hidden flex flex-col justify-between">
-            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/5 rounded-full pointer-events-none"></div>
+        <!-- 1. Saldo Kas Saat Ini -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-xs flex flex-col justify-between">
             <div>
-                <div class="flex items-center justify-between text-rose-200 text-xs font-bold uppercase tracking-wider">
-                    <span>Saldo Kas Saat Ini</span>
-                    <i data-lucide="wallet" class="w-4 h-4 text-orange-300"></i>
+                <div class="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider">
+                    <span class="text-slate-700">Saldo Kas Saat Ini</span>
+                    <div class="w-7 h-7 rounded-lg bg-orange-50 text-nochi-orange flex items-center justify-center">
+                        <i data-lucide="wallet" class="w-4 h-4"></i>
+                    </div>
                 </div>
                 <div class="mt-2.5">
-                    <span class="text-2xl sm:text-3xl font-black tracking-tight block {{ $saldoSaatIni >= 0 ? 'text-white' : 'text-rose-400' }}">
+                    <span class="text-xl sm:text-2xl font-black tracking-tight block {{ $saldoSaatIni >= 0 ? 'text-slate-900' : 'text-rose-600' }}">
                         Rp {{ number_format($saldoSaatIni, 0, ',', '.') }}
                     </span>
                 </div>
+                <!-- Status Surplus/Defisit & Margin -->
+                <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                    <span class="{{ $saldoSaatIni >= 0 ? 'text-emerald-800 bg-emerald-50 border-emerald-200/70' : 'text-rose-800 bg-rose-50 border-rose-200/70' }} px-2 py-0.5 rounded-md border">
+                        {{ $saldoSaatIni >= 0 ? '✅ Surplus (+)' : '⚠️ Defisit (-)' }}
+                    </span>
+                    <span class="text-slate-600 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70">
+                        Margin: {{ $profitMargin }}%
+                    </span>
+                </div>
             </div>
-            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] text-rose-200/80">
+            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                 <span>(Pemasukan - Pengeluaran)</span>
-                <span class="font-bold {{ $saldoSaatIni >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">
-                    {{ $saldoSaatIni >= 0 ? 'Surplus (+)' : 'Defisit (-)' }}
+                <span class="font-bold {{ $saldoSaatIni >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
+                    {{ $saldoSaatIni >= 0 ? 'Kas Sehat' : 'Defisit' }}
                 </span>
             </div>
         </div>
@@ -161,6 +171,162 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Inventory & Stock Asset Cards (Barang Mengendap di Gudang & Populasi Ternak) -->
+    <div class="space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1">
+            <div class="flex items-center gap-2">
+                <div class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></div>
+                <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 tracking-tight uppercase">
+                    Stok Barang Mengendap & Estimasi Nilai Aset Gudang
+                </h3>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                    Realtime Gudang & Master
+                </span>
+            </div>
+            <div class="text-xs font-bold text-slate-500">
+                Total Estimasi Aset Gudang (Telur + Pakan): 
+                <span class="text-slate-900 font-black text-sm">
+                    Rp {{ number_format($inventorySummary['total_estimasi_aset_gudang'] ?? 0, 0, ',', '.') }}
+                </span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- 1. Stok Telur Mengendap -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-xs flex flex-col justify-between hover:border-amber-200 transition-colors">
+                <div>
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider">
+                        <span class="text-amber-700">Stok Telur Gudang</span>
+                        <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                            <i data-lucide="egg" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2.5">
+                        <span class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight block">
+                            {{ number_format($inventorySummary['telur']['stok_peti'] ?? 0, 0, ',', '.') }} <span class="text-base font-bold text-amber-700">Peti</span>
+                            @if(($inventorySummary['telur']['stok_kg'] ?? 0) > 0)
+                                <span class="text-xs font-semibold text-slate-500">+ {{ $inventorySummary['telur']['stok_kg'] }} Kg</span>
+                            @endif
+                        </span>
+                    </div>
+                    <!-- Estimasi Nilai Penjualan Telur -->
+                    <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                        <span class="text-amber-900 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70 font-bold" title="Estimasi Nilai Stok Telur Mengendap">
+                            Est: Rp {{ number_format($inventorySummary['telur']['estimasi_nilai'] ?? 0, 0, ',', '.') }}
+                        </span>
+                        <span class="text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70" title="Total Bobot">
+                            {{ number_format($inventorySummary['telur']['net_total_kg'] ?? 0, 1, ',', '.') }} Kg Telur
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                    <span>Harga Master Harian</span>
+                    <span class="font-bold text-slate-700">Rp {{ number_format($inventorySummary['telur']['harga_peti'] ?? 0, 0, ',', '.') }}/Peti</span>
+                </div>
+            </div>
+
+            <!-- 2. Stok Pakan Layer (Ayam Petelur) -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-xs flex flex-col justify-between hover:border-emerald-200 transition-colors">
+                <div>
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider">
+                        <span class="text-emerald-700">Pakan Layer (Petelur)</span>
+                        <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <i data-lucide="boxes" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2.5">
+                        <span class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight block">
+                            {{ number_format($inventorySummary['pakan']['layer_stok_karung'] ?? 0, 1, ',', '.') }} <span class="text-base font-bold text-emerald-700">Krg</span>
+                            <span class="text-xs font-semibold text-slate-500">({{ number_format($inventorySummary['pakan']['layer_stok_kg'] ?? 0, 0, ',', '.') }} Kg)</span>
+                        </span>
+                    </div>
+                    <!-- Estimasi Nilai Pakan Layer -->
+                    <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                        <span class="text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/70 font-bold" title="Estimasi Nilai Stok Pakan Layer">
+                            Est: Rp {{ number_format($inventorySummary['pakan']['layer_estimasi_nilai'] ?? 0, 0, ',', '.') }}
+                        </span>
+                        <span class="text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70">
+                            {{ $inventorySummary['pakan']['kg_per_karung'] ?? 50 }} Kg/Krg
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                    <span>Harga Jual Pakan</span>
+                    <span class="font-bold text-slate-700">Rp {{ number_format($inventorySummary['pakan']['layer_harga_karung'] ?? 0, 0, ',', '.') }}/Krg</span>
+                </div>
+            </div>
+
+            <!-- 3. Stok Pakan Grower / Starter -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-xs flex flex-col justify-between hover:border-sky-200 transition-colors">
+                <div>
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider">
+                        <span class="text-sky-700">Pakan Grower / Starter</span>
+                        <div class="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+                            <i data-lucide="wheat" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2.5">
+                        <span class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight block">
+                            {{ number_format($inventorySummary['pakan']['grower_stok_karung'] ?? 0, 1, ',', '.') }} <span class="text-base font-bold text-sky-700">Krg</span>
+                            <span class="text-xs font-semibold text-slate-500">({{ number_format($inventorySummary['pakan']['grower_stok_kg'] ?? 0, 0, ',', '.') }} Kg)</span>
+                        </span>
+                    </div>
+                    <!-- Estimasi Nilai Pakan Grower -->
+                    <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                        <span class="text-sky-900 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200/70 font-bold" title="Estimasi Nilai Stok Pakan Grower">
+                            Est: Rp {{ number_format($inventorySummary['pakan']['grower_estimasi_nilai'] ?? 0, 0, ',', '.') }}
+                        </span>
+                        <span class="text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70">
+                            Total: {{ number_format($inventorySummary['pakan']['total_stok_karung'] ?? 0, 1, ',', '.') }} Krg
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                    <span>Harga Jual Pakan</span>
+                    <span class="font-bold text-slate-700">Rp {{ number_format($inventorySummary['pakan']['grower_harga_karung'] ?? 0, 0, ',', '.') }}/Krg</span>
+                </div>
+            </div>
+
+            <!-- 4. Populasi Ayam Farm (Total Sisa Ayam) -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-xs flex flex-col justify-between hover:border-violet-200 transition-colors">
+                <div>
+                    <div class="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider">
+                        <span class="text-violet-700">Total Sisa Ayam</span>
+                        <div class="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center">
+                            <i data-lucide="feather" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2.5">
+                        <span class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight block">
+                            {{ number_format($inventorySummary['ayam']['total_sisa_ayam'] ?? 0, 0, ',', '.') }} <span class="text-base font-bold text-violet-700">Ekor</span>
+                        </span>
+                    </div>
+                    <!-- Keterisian Kandang & Info Kloter -->
+                    <div class="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                        <span class="text-violet-900 bg-violet-50 px-2 py-0.5 rounded-md border border-violet-200/70 font-bold" title="Keterisian Kandang">
+                            🏠 {{ $inventorySummary['ayam']['persentase_keterisian'] ?? 0 }}% Terisi
+                        </span>
+                        <span class="text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70" title="Kapasitas Kandang">
+                            Kapasitas: {{ number_format($inventorySummary['ayam']['total_kapasitas'] ?? 0, 0, ',', '.') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                    <span>Rincian Kloter Aktif</span>
+                    <span class="font-bold text-slate-700 truncate max-w-[55%]" title="@foreach($inventorySummary['ayam']['flocks'] ?? [] as $fl){{ $fl['name'] }}: {{ number_format($fl['current_population'], 0, ',', '.') }} ekor | @endforeach">
+                        @if(!empty($inventorySummary['ayam']['flocks']))
+                            {{ count($inventorySummary['ayam']['flocks']) }} Kloter Aktif
+                        @else
+                            Semua Kandang
+                        @endif
+                    </span>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <!-- Executive Investor Insights & Export Toolbar -->

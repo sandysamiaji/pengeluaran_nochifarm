@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Sale;
 use App\Models\Expense;
+use App\Services\WarehouseInventoryService;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -237,7 +238,8 @@ class DashboardController extends Controller
         $waText .= "------------------------------------\n";
         $waText .= "_Laporan real-time resmi dari Sistem Nochi Farm_";
 
-        $waUrl = "https://wa.me/?text=" . urlencode($waText);
+        // 8. Ringkasan Aset & Stok Mengendap di Gudang (Telur, Pakan Layer/Grower, Populasi Sisa Ayam)
+        $inventorySummary = WarehouseInventoryService::getInventorySummary();
 
         return view('dashboard', compact(
             'totalPemasukan',
@@ -264,7 +266,8 @@ class DashboardController extends Controller
             'chartLabels',
             'chartIncome',
             'chartExpense',
-            'waUrl'
+            'waUrl',
+            'inventorySummary'
         ));
     }
 
