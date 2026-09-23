@@ -352,15 +352,29 @@ class ExpenseController extends Controller
     }
 
     /**
-     * Tampilkan Detail Pengeluaran (JSON)
+     * Tampilkan Detail Pengeluaran (JSON untuk Modal Detail & Edit)
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $expense = Expense::with('user')->findOrFail($id);
+        try {
+            $expense = Expense::with('user')->find($id);
 
-        return response()->json([
-            'success' => true,
-            'data' => [
+            if (!$expense) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Data pengeluaran tidak ditemukan.'
+                    ], 404);
+                }
+                return redirect()->route('expenses.index')->with('error', 'Data pengeluaran tidak ditemukan.');
+            }
+
+            $user = $expense->user;
+            $username = $user ? ($user->username ?: $user->name) : 'admin';
+            $name = $user ? $user->name : 'Admin Kandang';
+            $role = $user ? ($user->role ?? 'Petugas Input') : 'Petugas Kandang';
+
+            $data = [
                 'id' => $expense->id,
                 'transaction_code' => $expense->transaction_code,
                 'date' => Carbon::parse($expense->date)->format('Y-m-d'),
@@ -372,12 +386,33 @@ class ExpenseController extends Controller
                 'formatted_amount' => 'Rp ' . number_format($expense->amount, 0, ',', '.'),
                 'payment_method' => $expense->payment_method ?? 'Kas Tunai',
                 'notes' => $expense->notes ?? '',
-                'receipt_photo' => $expense->receipt_photo ? asset($expense->receipt_photo) : null,
-                'penginput_username' => $expense->user ? ($expense->user->username ?: $expense->user->name) : 'admin',
-                'penginput_name' => $expense->user ? $expense->user->name : 'Admin Kandang',
-                'penginput_role' => $expense->user ? ($expense->user->role ?? 'Petugas Input') : 'Petugas Kandang',
-            ]
-        ]);
+                'receipt_photo' => $expense->receipt_url ?? ($expense->receipt_photo ? asset($expense->receipt_photo) : null),
+                'penginput_username' => $username,
+                'penginput_name' => $name,
+                'penginput_role' => $role,
+            ];
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $data
+                ]);
+            }
+
+            // Jika diakses langsung via browser URL bar tanpa AJAX, kembalikan response JSON atau redirect
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Throwable $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+                ], 500);
+            }
+            return redirect()->route('expenses.index')->with('error', 'Gagal memuat detail pengeluaran.');
+        }
     }
 
     /**
