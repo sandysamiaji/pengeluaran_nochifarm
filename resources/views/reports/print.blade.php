@@ -23,6 +23,19 @@
             .page-break {
                 page-break-before: always;
             }
+            table {
+                page-break-inside: auto;
+            }
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-footer-group;
+            }
         }
     </style>
 </head>
@@ -146,12 +159,25 @@
             </div>
         </div>
 
-        <!-- Rincian Mutasi Transaksi Terbaru -->
+        <!-- Rincian Seluruh Mutasi Transaksi -->
         <div class="mb-8">
-            <h3 class="text-xs font-black uppercase text-slate-800 tracking-wider mb-2 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-slate-800"></span>
-                <span>Rincian Buku Kas & Mutasi Transaksi</span>
-            </h3>
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xs font-black uppercase text-slate-800 tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-slate-800"></span>
+                    <span>Rincian Buku Kas & Seluruh Mutasi Transaksi</span>
+                </h3>
+                @php
+                    $allCombined = collect();
+                    foreach($sales as $s) {
+                        $allCombined->push(['date' => $s->date, 'code' => $s->invoice_no ?: ('INV-'.$s->id), 'desc' => 'Penjualan' . ($s->customer_name ? ' - '.$s->customer_name : ''), 'in' => $s->total_amount, 'out' => 0]);
+                    }
+                    foreach($expenses as $e) {
+                        $allCombined->push(['date' => $e->date, 'code' => $e->transaction_code, 'desc' => $e->purpose . ' (' . $e->category . ')', 'in' => 0, 'out' => $e->amount]);
+                    }
+                    $allCombined = $allCombined->sortBy('date');
+                @endphp
+                <span class="text-[11px] font-bold text-slate-500">Total: {{ $allCombined->count() }} Transaksi</span>
+            </div>
             <div class="border border-slate-200 rounded-xl overflow-hidden">
                 <table class="w-full text-left text-[11px] border-collapse">
                     <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
@@ -165,17 +191,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        @php
-                            $allCombined = collect();
-                            foreach($sales as $s) {
-                                $allCombined->push(['date' => $s->date, 'code' => $s->invoice_no ?: ('INV-'.$s->id), 'desc' => 'Penjualan' . ($s->customer_name ? ' - '.$s->customer_name : ''), 'in' => $s->total_amount, 'out' => 0]);
-                            }
-                            foreach($expenses as $e) {
-                                $allCombined->push(['date' => $e->date, 'code' => $e->transaction_code, 'desc' => $e->purpose . ' (' . $e->category . ')', 'in' => 0, 'out' => $e->amount]);
-                            }
-                            $allCombined = $allCombined->sortBy('date');
-                        @endphp
-                        @foreach($allCombined->take(30) as $idx => $row)
+                        @forelse($allCombined as $idx => $row)
                         <tr>
                             <td class="py-1.5 px-2 text-center text-slate-400">{{ $idx + 1 }}</td>
                             <td class="py-1.5 px-2 whitespace-nowrap">{{ \Carbon\Carbon::parse($row['date'])->format('d/m/Y') }}</td>
@@ -188,13 +204,21 @@
                                 {{ $row['out'] > 0 ? number_format($row['out'], 0, ',', '.') : '-' }}
                             </td>
                         </tr>
-                        @endforeach
+                        @empty
+                        <tr>
+                            <td colspan="6" class="py-4 text-center text-slate-400">Tidak ada data transaksi pada periode ini.</td>
+                        </tr>
+                        @endforelse
                     </tbody>
+                    <tfoot class="bg-slate-50 font-bold border-t border-slate-200 text-slate-800">
+                        <tr>
+                            <td colspan="4" class="py-2.5 px-2 text-right font-extrabold uppercase">TOTAL MUTASI ({{ $allCombined->count() }} TRANSAKSI)</td>
+                            <td class="py-2.5 px-2 text-right font-black text-emerald-700">+ Rp {{ number_format($totalPemasukan, 0, ',', '.') }}</td>
+                            <td class="py-2.5 px-2 text-right font-black text-rose-700">- Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
-            @if($allCombined->count() > 30)
-                <p class="text-[10px] text-slate-400 mt-1 italic">* Menampilkan 30 transaksi teratas untuk lembar cetak ringkas. Unduh versi lengkap via Export CSV.</p>
-            @endif
         </div>
 
         <!-- Lembar Pengesahan / Tanda Tangan (Investor & Pengelola) -->
