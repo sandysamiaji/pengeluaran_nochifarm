@@ -259,12 +259,12 @@
             </div>
 
             <!-- 3. Laba Bersih -->
-            <div class="p-3.5 sm:p-4 bg-slate-900 text-white rounded-xl shadow-xs flex flex-col justify-between">
-                <span class="text-[10px] font-bold text-rose-200 uppercase tracking-wider block">Laba Bersih (Saldo Kas)</span>
-                <span class="text-base sm:text-lg lg:text-xl font-black block my-1 {{ $saldoKas >= 0 ? 'text-white' : 'text-rose-400' }}">
+            <div class="p-3.5 sm:p-4 bg-white rounded-xl border border-slate-300 shadow-xs flex flex-col justify-between">
+                <span class="text-[10px] font-bold text-slate-800 uppercase tracking-wider block">Laba Bersih (Saldo Kas)</span>
+                <span class="text-base sm:text-lg lg:text-xl font-black text-slate-900 block my-1">
                     Rp {{ number_format($saldoKas, 0, ',', '.') }}
                 </span>
-                <span class="text-[10px] {{ $saldoKas >= 0 ? 'text-emerald-400' : 'text-rose-400' }} font-bold block">
+                <span class="text-[10px] text-slate-800 font-bold block">
                     {{ $saldoKas >= 0 ? 'Surplus / Profit' : 'Defisit' }} ({{ $totalPemasukan > 0 ? round(($saldoKas / $totalPemasukan) * 100, 1) : 0 }}% Margin)
                 </span>
             </div>
