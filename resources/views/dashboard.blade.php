@@ -533,7 +533,7 @@
                 </div>
 
                 <div class="relative h-64 sm:h-72 w-full">
-                    <canvas id="cashflowTrendChart" class="w-full h-full block"></canvas>
+                    <canvas id="cashflowTrendChart"></canvas>
                 </div>
             </div>
 
@@ -612,8 +612,14 @@
                 @endif
             </div>
             
-            <div class="relative h-44 w-full flex items-center justify-center my-2">
-                <canvas id="expenseCategoryChart" class="w-full h-full block"></canvas>
+            <div class="relative h-48 sm:h-52 w-full flex items-center justify-center my-2">
+                <canvas id="expenseCategoryChart"></canvas>
+                @if($totalPengeluaran > 0)
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span class="text-[10px] uppercase font-bold text-slate-400">Total Biaya</span>
+                    <span class="text-xs sm:text-sm font-extrabold text-slate-800">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</span>
+                </div>
+                @endif
             </div>
 
             <!-- List Kategori Pengeluaran Lengkap dengan Progress Bar -->
@@ -1588,12 +1594,16 @@
     const startInput = document.getElementById('travelokaStartDate');
     const endInput = document.getElementById('travelokaEndDate');
 
-    startInput.addEventListener('change', updateDayLabels);
-    endInput.addEventListener('change', updateDayLabels);
+    if (startInput) startInput.addEventListener('change', updateDayLabels);
+    if (endInput) endInput.addEventListener('change', updateDayLabels);
 
     function updateDayLabels() {
-        const sVal = startInput.value;
-        const eVal = endInput.value;
+        const sInput = document.getElementById('travelokaStartDate');
+        const eInput = document.getElementById('travelokaEndDate');
+        if (!sInput || !eInput) return;
+
+        const sVal = sInput.value;
+        const eVal = eInput.value;
 
         if (sVal) {
             const d1 = new Date(sVal);
@@ -2118,105 +2128,6 @@
         });
     }
 
-    const startInput = document.getElementById('travelokaStartDate');
-    const endInput = document.getElementById('travelokaEndDate');
-
-    if (startInput) startInput.addEventListener('change', updateDayLabels);
-    if (endInput) endInput.addEventListener('change', updateDayLabels);
-
-    function updateDayLabels() {
-        const sInput = document.getElementById('travelokaStartDate');
-        const eInput = document.getElementById('travelokaEndDate');
-        if (!sInput || !eInput) return;
-
-        const sVal = sInput.value;
-        const eVal = eInput.value;
-
-        const sLabel = document.getElementById('startDayLabel');
-        const eLabel = document.getElementById('endDayLabel');
-        const durText = document.getElementById('durationText');
-
-        if (sVal) {
-            const d1 = new Date(sVal);
-            if (sLabel) sLabel.textContent = d1.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
-        } else {
-            if (sLabel) sLabel.textContent = 'Pilih tanggal awal';
-        }
-
-        if (eVal) {
-            const d2 = new Date(eVal);
-            if (eLabel) eLabel.textContent = d2.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
-        } else {
-            if (eLabel) eLabel.textContent = 'Pilih tanggal akhir';
-        }
-
-        if (sVal && eVal && durText) {
-            const diffMs = new Date(eVal) - new Date(sVal);
-            const days = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
-            if (days > 0) {
-                durText.innerHTML = `Rentang dipilih: <strong>${days} Hari</strong>. Tekan <strong>Terapkan Filter</strong> untuk mengaktifkan.`;
-            } else {
-                durText.innerHTML = `<span class="text-rose-600 font-bold">Tanggal selesai tidak boleh sebelum tanggal mulai!</span>`;
-            }
-        }
-    }
-
-    function setPresetDateRange(preset) {
-        const now = new Date();
-        const formatDate = (d) => {
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        };
-
-        let start = '', end = '';
-
-        if (preset === 'today') {
-            start = formatDate(now);
-            end = start;
-        } else if (preset === 'yesterday') {
-            const y = new Date();
-            y.setDate(y.getDate() - 1);
-            start = formatDate(y);
-            end = start;
-        } else if (preset === 'this_week') {
-            const d = new Date();
-            const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-            const monday = new Date(d.setDate(diff));
-            start = formatDate(monday);
-            end = formatDate(new Date());
-        } else if (preset === 'this_month') {
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-            start = formatDate(firstDay);
-            end = formatDate(now);
-        } else if (preset === 'last_month') {
-            const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-            const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
-            start = formatDate(firstDay);
-            end = formatDate(lastDay);
-        }
-
-        const sInput = document.getElementById('travelokaStartDate');
-        const eInput = document.getElementById('travelokaEndDate');
-        if (sInput && eInput) {
-            sInput.value = start;
-            eInput.value = end;
-            updateDayLabels();
-        }
-    }
-
-    function resetDateFilter() {
-        const sInput = document.getElementById('travelokaStartDate');
-        const eInput = document.getElementById('travelokaEndDate');
-        if (sInput && eInput) {
-            sInput.value = '';
-            eInput.value = '';
-            updateDayLabels();
-        }
-    }
-
     // -------------------------------------------------------------
     // Chart.js Visualizations (Cashflow Trend & Category Doughnut)
     // -------------------------------------------------------------
@@ -2225,129 +2136,130 @@
             return;
         }
 
-        // 1. Tren Arus Kas Bulanan (Pemasukan vs Pengeluaran)
-        const ctxTrend = document.getElementById('cashflowTrendChart');
-        if (ctxTrend) {
-            try {
-                if (window.cashflowChartInstance) {
-                    window.cashflowChartInstance.destroy();
-                }
-                const existingTrend = Chart.getChart(ctxTrend);
-                if (existingTrend) existingTrend.destroy();
-            } catch (e) {}
+        requestAnimationFrame(() => {
+            // 1. Tren Arus Kas Bulanan (Pemasukan vs Pengeluaran)
+            const ctxTrend = document.getElementById('cashflowTrendChart');
+            if (ctxTrend) {
+                try {
+                    if (window.cashflowChartInstance) {
+                        window.cashflowChartInstance.destroy();
+                    }
+                    const existingTrend = Chart.getChart(ctxTrend);
+                    if (existingTrend) existingTrend.destroy();
+                } catch (e) {}
 
-            const chartLabels = {!! json_encode($chartLabels) !!};
-            const chartIncome = {!! json_encode($chartIncome) !!};
-            const chartExpense = {!! json_encode($chartExpense) !!};
+                const chartLabels = {!! json_encode($chartLabels) !!};
+                const chartIncome = {!! json_encode($chartIncome) !!};
+                const chartExpense = {!! json_encode($chartExpense) !!};
 
-            const ctx = ctxTrend.getContext('2d');
-            window.cashflowChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: chartLabels,
-                    datasets: [
-                        {
-                            label: 'Pemasukan (Omzet)',
-                            data: chartIncome,
-                            backgroundColor: '#10b981',
-                            borderRadius: 8,
-                            barPercentage: 0.6,
-                            categoryPercentage: 0.6
-                        },
-                        {
-                            label: 'Pengeluaran (Biaya)',
-                            data: chartExpense,
-                            backgroundColor: '#f43f5e',
-                            borderRadius: 8,
-                            barPercentage: 0.6,
-                            categoryPercentage: 0.6
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': Rp ' + Number(context.parsed.y || 0).toLocaleString('id-ID');
-                                }
+                const ctx = ctxTrend.getContext('2d');
+                window.cashflowChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [
+                            {
+                                label: 'Pemasukan (Omzet)',
+                                data: chartIncome,
+                                backgroundColor: '#10b981',
+                                borderRadius: 6,
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.6
+                            },
+                            {
+                                label: 'Pengeluaran (Biaya)',
+                                data: chartExpense,
+                                backgroundColor: '#f43f5e',
+                                borderRadius: 6,
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.6
                             }
-                        }
+                        ]
                     },
-                    scales: {
-                        x: {
-                            grid: { display: false }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': Rp ' + Number(context.parsed.y || 0).toLocaleString('id-ID');
+                                    }
+                                }
+                            }
                         },
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(1) + ' jt';
-                                    if (value >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + ' rb';
-                                    return 'Rp ' + value;
+                        scales: {
+                            x: {
+                                grid: { display: false }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(1) + ' jt';
+                                        if (value >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + ' rb';
+                                        return 'Rp ' + value;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
-        }
+                });
+            }
 
-        // 2. Komposisi Kategori Pengeluaran (Doughnut)
-        const ctxCategory = document.getElementById('expenseCategoryChart');
-        if (ctxCategory) {
-            try {
-                if (window.categoryChartInstance) {
-                    window.categoryChartInstance.destroy();
-                }
-                const existingCat = Chart.getChart(ctxCategory);
-                if (existingCat) existingCat.destroy();
-            } catch (e) {}
+            // 2. Komposisi Kategori Pengeluaran (Doughnut)
+            const ctxCategory = document.getElementById('expenseCategoryChart');
+            if (ctxCategory) {
+                try {
+                    if (window.categoryChartInstance) {
+                        window.categoryChartInstance.destroy();
+                    }
+                    const existingCat = Chart.getChart(ctxCategory);
+                    if (existingCat) existingCat.destroy();
+                } catch (e) {}
 
-            const catData = {!! json_encode($categoryBreakdown) !!};
-            const hasData = Array.isArray(catData) && catData.length > 0;
-            const labels = hasData ? catData.map(c => c.category) : ['Belum Ada Pengeluaran'];
-            const totals = hasData ? catData.map(c => c.total) : [1];
+                const catData = {!! json_encode($categoryBreakdown) !!};
+                const hasData = Array.isArray(catData) && catData.length > 0;
+                const labels = hasData ? catData.map(c => c.category) : ['Belum Ada Pengeluaran'];
+                const totals = hasData ? catData.map(c => c.total) : [1];
 
-            const palette = ['#800020', '#f95721', '#0284c7', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#64748b'];
+                const palette = ['#800020', '#f95721', '#0284c7', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#64748b'];
 
-            const ctxCat = ctxCategory.getContext('2d');
-            window.categoryChartInstance = new Chart(ctxCat, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: totals,
-                        backgroundColor: hasData ? palette.slice(0, totals.length) : ['#e2e8f0'],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '72%',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    if (!hasData) return ' Belum ada data pengeluaran';
-                                    return ' ' + context.label + ': Rp ' + Number(context.parsed || 0).toLocaleString('id-ID');
+                const ctxCat = ctxCategory.getContext('2d');
+                window.categoryChartInstance = new Chart(ctxCat, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: totals,
+                            backgroundColor: hasData ? palette.slice(0, totals.length) : ['#e2e8f0'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '72%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        if (!hasData) return ' Belum ada data pengeluaran';
+                                        return ' ' + context.label + ': Rp ' + Number(context.parsed || 0).toLocaleString('id-ID');
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
-        }
+                });
+            }
+        });
     };
 
-    // Auto-exec with polling loop
-    (function checkAndRunCharts() {
+    function triggerChartInit() {
         if (typeof Chart !== 'undefined') {
             window.initDashboardCharts();
         } else {
@@ -2357,23 +2269,20 @@
                 if (typeof Chart !== 'undefined') {
                     clearInterval(chartInterval);
                     window.initDashboardCharts();
-                } else if (attempt > 40) {
+                } else if (attempt > 50) {
                     clearInterval(chartInterval);
                 }
-            }, 100);
+            }, 80);
         }
-    })();
+    }
 
-    window.addEventListener('load', function() {
-        if (typeof window.initDashboardCharts === 'function') {
-            window.initDashboardCharts();
-        }
-    });
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', triggerChartInit);
+    } else {
+        triggerChartInit();
+    }
 
-    window.addEventListener('page:loaded', function() {
-        if (typeof window.initDashboardCharts === 'function') {
-            window.initDashboardCharts();
-        }
-    });
+    window.addEventListener('load', triggerChartInit);
+    window.addEventListener('page:loaded', triggerChartInit);
 </script>
 @endsection
