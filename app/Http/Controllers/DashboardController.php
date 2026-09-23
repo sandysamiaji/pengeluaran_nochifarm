@@ -46,9 +46,22 @@ class DashboardController extends Controller
         $countExpenses = (clone $expensesQuery)->count();
         $totalTransaksi = $countSales + $countExpenses;
 
-        // Metrik Laba Rugi untuk Investor
-        $profitMargin = $totalPemasukan > 0 ? round(($saldoSaatIni / $totalPemasukan) * 100, 1) : 0;
-        $opexRatio = $totalPemasukan > 0 ? round(($totalPengeluaran / $totalPemasukan) * 100, 1) : 0;
+        // Metrik Laba Rugi untuk Investor (Bisa bernilai minus jika operasional defisit/boncos)
+        if ($totalPemasukan > 0) {
+            $profitMargin = round(($saldoSaatIni / $totalPemasukan) * 100, 1);
+        } elseif ($saldoSaatIni < 0) {
+            $profitMargin = -100;
+        } else {
+            $profitMargin = 0;
+        }
+
+        if ($totalPemasukan > 0) {
+            $opexRatio = round(($totalPengeluaran / $totalPemasukan) * 100, 1);
+        } elseif ($totalPengeluaran > 0) {
+            $opexRatio = 100;
+        } else {
+            $opexRatio = 0;
+        }
 
         // Ambil data untuk tabel transaksi gabungan
         $sales = $salesQuery->get();

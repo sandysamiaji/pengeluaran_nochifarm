@@ -265,7 +265,7 @@
                     Rp {{ number_format($saldoKas, 0, ',', '.') }}
                 </span>
                 <span class="text-[10px] text-slate-800 font-bold block">
-                    {{ $saldoKas >= 0 ? 'Surplus / Profit' : 'Defisit' }} ({{ $totalPemasukan > 0 ? round(($saldoKas / $totalPemasukan) * 100, 1) : 0 }}% Margin)
+                    {{ $saldoKas >= 0 ? 'Surplus / Profit' : 'Defisit' }} ({{ $totalPemasukan > 0 ? round(($saldoKas / $totalPemasukan) * 100, 1) : ($saldoKas < 0 ? -100 : 0) }}% Margin)
                 </span>
             </div>
         </div>

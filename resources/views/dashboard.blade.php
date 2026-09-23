@@ -79,7 +79,7 @@
                     <span class="{{ $saldoSaatIni >= 0 ? 'text-emerald-800 bg-emerald-50 border-emerald-200/70' : 'text-rose-800 bg-rose-50 border-rose-200/70' }} px-2 py-0.5 rounded-md border">
                         {{ $saldoSaatIni >= 0 ? '✅ Surplus (+)' : '⚠️ Defisit (-)' }}
                     </span>
-                    <span class="text-slate-600 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/70">
+                    <span class="{{ $profitMargin >= 0 ? 'text-slate-600 bg-slate-50 border-slate-200/70' : 'text-rose-700 bg-rose-50 border-rose-200 font-bold' }} px-2 py-0.5 rounded-md border">
                         Margin: {{ $profitMargin }}%
                     </span>
                 </div>
@@ -397,22 +397,24 @@
             
             <!-- 1. Net Profit Margin -->
             <div onclick="openFinancialFormulaModal('margin')" 
-                class="bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 hover:border-emerald-500/50 rounded-xl p-3 sm:p-3.5 cursor-pointer transition-all duration-200 group flex items-center gap-3 relative shadow-xs"
+                class="bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 {{ $profitMargin >= 0 ? 'hover:border-emerald-500/50' : 'hover:border-rose-500/50' }} rounded-xl p-3 sm:p-3.5 cursor-pointer transition-all duration-200 group flex items-center gap-3 relative shadow-xs"
                 title="Klik untuk melihat rumus & hitungan realtime">
-                <div class="w-9 h-9 rounded-lg bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30 flex items-center justify-center font-black text-sm shrink-0 group-hover:scale-105 transition-transform">
+                <div class="w-9 h-9 rounded-lg {{ $profitMargin >= 0 ? 'bg-emerald-500/20 text-emerald-400 ring-emerald-500/30' : 'bg-rose-500/20 text-rose-400 ring-rose-500/30' }} ring-1 flex items-center justify-center font-black text-sm shrink-0 group-hover:scale-105 transition-transform">
                     %
                 </div>
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center justify-between gap-1">
                         <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider truncate">Net Profit Margin</span>
-                        <div class="w-4 h-4 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 group-hover:text-emerald-400 group-hover:bg-emerald-500/20 transition-colors" title="Cara Hitung">
+                        <div class="w-4 h-4 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 {{ $profitMargin >= 0 ? 'group-hover:text-emerald-400 group-hover:bg-emerald-500/20' : 'group-hover:text-rose-400 group-hover:bg-rose-500/20' }} transition-colors" title="Cara Hitung">
                             <i data-lucide="help-circle" class="w-3 h-3"></i>
                         </div>
                     </div>
-                    <div class="text-sm sm:text-base font-black text-emerald-400 tracking-tight leading-tight mt-0.5">
+                    <div class="text-sm sm:text-base font-black {{ $profitMargin >= 0 ? 'text-emerald-400' : 'text-rose-400' }} tracking-tight leading-tight mt-0.5">
                         {{ $profitMargin }}%
                     </div>
-                    <span class="text-[10px] text-slate-400 block truncate mt-0.5">Laba Bersih / Omzet</span>
+                    <span class="text-[10px] {{ $profitMargin >= 0 ? 'text-slate-400' : 'text-rose-300 font-bold' }} block truncate mt-0.5">
+                        {{ $profitMargin >= 0 ? 'Laba Bersih / Omzet' : 'Defisit / Rugi Operasional' }}
+                    </span>
                 </div>
             </div>
 
@@ -1385,34 +1387,43 @@
             </div>
 
             <!-- Kartu 1: Net Profit Margin -->
-            <div id="sectionFormulaMargin" class="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/40 space-y-3">
+            <div id="sectionFormulaMargin" class="p-4 rounded-2xl border {{ $profitMargin >= 0 ? 'border-emerald-200 bg-emerald-50/40' : 'border-rose-200 bg-rose-50/40' }} space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-xs">%</span>
-                        <h4 class="font-black text-emerald-950 text-sm sm:text-base">1. Net Profit Margin = {{ $profitMargin }}%</h4>
+                        <span class="w-7 h-7 rounded-lg {{ $profitMargin >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }} flex items-center justify-center font-black text-xs">%</span>
+                        <h4 class="font-black {{ $profitMargin >= 0 ? 'text-emerald-950' : 'text-rose-950' }} text-sm sm:text-base">1. Net Profit Margin = {{ $profitMargin }}%</h4>
                     </div>
-                    <span class="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-md">Laba Bersih</span>
+                    <span class="text-[11px] font-bold {{ $profitMargin >= 0 ? 'text-emerald-700 bg-emerald-100' : 'text-rose-700 bg-rose-100' }} px-2.5 py-0.5 rounded-md">
+                        {{ $profitMargin >= 0 ? 'Laba Bersih' : 'Defisit Operasional' }}
+                    </span>
                 </div>
 
                 <p class="text-xs text-slate-600 leading-relaxed">
-                    <strong>Definisi:</strong> Mengukur persentase sisa keuntungan bersih yang diperoleh pemilik/investor dari seluruh total omzet penjualan telur & pakan setelah dipotong biaya operasional.
+                    <strong>Definisi:</strong> Mengukur persentase sisa keuntungan bersih yang diperoleh pemilik/investor dari seluruh total omzet penjualan telur & pakan setelah dipotong biaya operasional. Jika bernilai <strong>minus (negatif)</strong>, artinya peternakan sedang mengalami kerugian operasional (biaya lebih besar daripada pendapatan).
                 </p>
 
                 <!-- Rumus Box -->
-                <div class="p-3 bg-white rounded-xl border border-emerald-200/80 space-y-1.5 font-mono text-xs">
+                <div class="p-3 bg-white rounded-xl border {{ $profitMargin >= 0 ? 'border-emerald-200/80' : 'border-rose-200/80' }} space-y-1.5 font-mono text-xs">
                     <div class="text-slate-500 font-bold uppercase text-[10px]">Rumus Matematika:</div>
                     <div class="font-black text-slate-800">
                         Net Profit Margin = (Saldo Bersih / Total Pemasukan) &times; 100%
                     </div>
-                    <div class="pt-1.5 border-t border-slate-100 text-emerald-700 font-bold">
-                        Hitungan Realtime: (Rp {{ number_format($saldoSaatIni, 0, ',', '.') }} &divide; Rp {{ number_format($totalPemasukan, 0, ',', '.') }}) &times; 100% = <strong class="text-emerald-900">{{ $profitMargin }}%</strong>
+                    <div class="pt-1.5 border-t border-slate-100 {{ $profitMargin >= 0 ? 'text-emerald-700' : 'text-rose-700' }} font-bold">
+                        Hitungan Realtime: (Rp {{ number_format($saldoSaatIni, 0, ',', '.') }} &divide; Rp {{ number_format($totalPemasukan, 0, ',', '.') }}) &times; 100% = <strong class="{{ $profitMargin >= 0 ? 'text-emerald-900' : 'text-rose-900' }}">{{ $profitMargin }}%</strong>
                     </div>
                 </div>
 
+                @if($profitMargin >= 0)
                 <div class="p-2.5 bg-emerald-100/60 rounded-xl text-[11px] text-emerald-900 flex items-start gap-2">
                     <i data-lucide="check-circle" class="w-4 h-4 text-emerald-700 shrink-0 mt-0.5"></i>
                     <span><strong>Makna Bisnis:</strong> Dari setiap <strong>Rp 100</strong> pendapatan omzet yang masuk ke Nochi Farm, tersisa <strong>Rp {{ $profitMargin }}</strong> sebagai laba bersih peternakan.</span>
                 </div>
+                @else
+                <div class="p-2.5 bg-rose-100/60 rounded-xl text-[11px] text-rose-900 flex items-start gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-700 shrink-0 mt-0.5"></i>
+                    <span><strong>Peringatan Bisnis:</strong> Saat ini kondisi peternakan <strong>DEFISIT (MINUS {{ abs($profitMargin) }}%)</strong>. Dari setiap <strong>Rp 100</strong> omzet penjualan, biaya pengeluaran membengkak sehingga tekor <strong>Rp {{ abs($profitMargin) }}</strong>. Tim operasional & penjualan perlu segera mengejar omzet atau mengontrol pos-pos pengeluaran pakan/operasional!</span>
+                </div>
+                @endif
             </div>
 
             <!-- Kartu 2: OPEX Ratio -->
