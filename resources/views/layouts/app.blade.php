@@ -432,6 +432,9 @@
 
                 // 8. Trigger Global Event untuk Inisialisasi Chart dsb
                 window.dispatchEvent(new CustomEvent('page:loaded'));
+                if (typeof window.initDashboardCharts === 'function') {
+                    setTimeout(() => window.initDashboardCharts(), 60);
+                }
 
                 // 9. Smooth Scroll ke Elemen Target / Atas Halaman
                 setTimeout(() => {

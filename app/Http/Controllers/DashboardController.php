@@ -202,24 +202,58 @@ class DashboardController extends Controller
         })->sortByDesc('total')->values();
 
         // 6. Data Chart: Tren Arus Kas Bulanan (Bar/Line Chart)
+        $allSalesForChart = [];
         try {
-            $allSalesForChart = Sale::selectRaw('DATE_FORMAT(date, "%Y-%m") as month, SUM(total_amount) as total')
-                ->groupBy(DB::raw('DATE_FORMAT(date, "%Y-%m")'))
-                ->orderBy('month', 'asc')
-                ->pluck('total', 'month')
-                ->toArray();
+            $salesMonthly = Sale::select(
+                DB::raw('DATE_FORMAT(date, "%Y-%m") as ym'),
+                DB::raw('SUM(total_amount) as total')
+            )
+            ->groupBy(DB::raw('DATE_FORMAT(date, "%Y-%m")'))
+            ->orderBy('ym', 'asc')
+            ->get();
+
+            foreach ($salesMonthly as $sm) {
+                if (!empty($sm->ym)) {
+                    $allSalesForChart[$sm->ym] = (float)$sm->total;
+                }
+            }
         } catch (\Throwable $e) {
-            $allSalesForChart = [];
+            try {
+                $allSalesForChart = Sale::all()->groupBy(function($s) {
+                    return Carbon::parse($s->date)->format('Y-m');
+                })->map(function($items) {
+                    return (float)$items->sum('total_amount');
+                })->toArray();
+            } catch (\Throwable $e2) {
+                $allSalesForChart = [];
+            }
         }
 
+        $allExpensesForChart = [];
         try {
-            $allExpensesForChart = Expense::selectRaw('DATE_FORMAT(date, "%Y-%m") as month, SUM(amount) as total')
-                ->groupBy(DB::raw('DATE_FORMAT(date, "%Y-%m")'))
-                ->orderBy('month', 'asc')
-                ->pluck('total', 'month')
-                ->toArray();
+            $expensesMonthly = Expense::select(
+                DB::raw('DATE_FORMAT(date, "%Y-%m") as ym'),
+                DB::raw('SUM(amount) as total')
+            )
+            ->groupBy(DB::raw('DATE_FORMAT(date, "%Y-%m")'))
+            ->orderBy('ym', 'asc')
+            ->get();
+
+            foreach ($expensesMonthly as $em) {
+                if (!empty($em->ym)) {
+                    $allExpensesForChart[$em->ym] = (float)$em->total;
+                }
+            }
         } catch (\Throwable $e) {
-            $allExpensesForChart = [];
+            try {
+                $allExpensesForChart = Expense::all()->groupBy(function($ex) {
+                    return Carbon::parse($ex->date)->format('Y-m');
+                })->map(function($items) {
+                    return (float)$items->sum('amount');
+                })->toArray();
+            } catch (\Throwable $e2) {
+                $allExpensesForChart = [];
+            }
         }
 
         // Ambil daftar unik semua bulan (minimal 6 bulan terakhir s/d bulan sekarang)

@@ -2145,12 +2145,12 @@
     // -------------------------------------------------------------
     // Chart.js Visualizations (Cashflow Trend & Category Doughnut)
     // -------------------------------------------------------------
-    function initDashboardCharts() {
+    window.initDashboardCharts = function() {
         if (typeof Chart === 'undefined') {
             return;
         }
 
-        // 1. Tren Arus Kas Bulanan
+        // 1. Tren Arus Kas Bulanan (Pemasukan vs Pengeluaran)
         const ctxTrend = document.getElementById('cashflowTrendChart');
         if (ctxTrend) {
             try {
@@ -2159,9 +2159,7 @@
                 }
                 const existingTrend = Chart.getChart(ctxTrend);
                 if (existingTrend) existingTrend.destroy();
-            } catch (e) {
-                console.warn('Error destroying old trend chart:', e);
-            }
+            } catch (e) {}
 
             const chartLabels = {!! json_encode($chartLabels) !!};
             const chartIncome = {!! json_encode($chartIncome) !!};
@@ -2231,9 +2229,7 @@
                 }
                 const existingCat = Chart.getChart(ctxCategory);
                 if (existingCat) existingCat.destroy();
-            } catch (e) {
-                console.warn('Error destroying old category chart:', e);
-            }
+            } catch (e) {}
 
             const catData = {!! json_encode($categoryBreakdown) !!};
             const hasData = Array.isArray(catData) && catData.length > 0;
@@ -2271,22 +2267,36 @@
                 }
             });
         }
-    }
+    };
 
-    function ensureChartJsAndInit(attempts = 0) {
+    // Auto-exec with polling loop
+    (function checkAndRunCharts() {
         if (typeof Chart !== 'undefined') {
-            initDashboardCharts();
-        } else if (attempts < 20) {
-            setTimeout(() => ensureChartJsAndInit(attempts + 1), 150);
+            window.initDashboardCharts();
+        } else {
+            let attempt = 0;
+            const chartInterval = setInterval(() => {
+                attempt++;
+                if (typeof Chart !== 'undefined') {
+                    clearInterval(chartInterval);
+                    window.initDashboardCharts();
+                } else if (attempt > 40) {
+                    clearInterval(chartInterval);
+                }
+            }, 100);
         }
-    }
+    })();
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => ensureChartJsAndInit(0));
-    } else {
-        ensureChartJsAndInit(0);
-    }
-    window.addEventListener('load', () => ensureChartJsAndInit(0));
-    window.addEventListener('page:loaded', () => ensureChartJsAndInit(0));
+    window.addEventListener('load', function() {
+        if (typeof window.initDashboardCharts === 'function') {
+            window.initDashboardCharts();
+        }
+    });
+
+    window.addEventListener('page:loaded', function() {
+        if (typeof window.initDashboardCharts === 'function') {
+            window.initDashboardCharts();
+        }
+    });
 </script>
 @endpush
