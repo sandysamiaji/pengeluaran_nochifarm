@@ -200,7 +200,7 @@
                 <div>
                     <h1 class="text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase">NOCHI FARM</h1>
                     <p class="text-[10px] sm:text-xs font-bold text-rose-800 tracking-wider uppercase">PETERNAK AYAM PETELUR & DISTRIBUSI TELUR SEGAR</p>
-                    <p class="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 leading-snug">Jl. Raya Peternakan Nochi Farm &bull; Kebumen, Jawa Tengah &bull; Telp: (0287) 662-890</p>
+                    <p class="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 leading-snug">Jl. Raya Peternakan Nochi Farm &bull; Kebumen, Jawa Tengah</p>
                 </div>
             </div>
             <div class="text-left sm:text-right w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
