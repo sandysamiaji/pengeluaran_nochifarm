@@ -65,7 +65,7 @@
                 display: table-header-group;
             }
             tfoot {
-                display: table-footer-group;
+                display: table-row-group !important;
             }
             .print-grid-3 {
                 display: grid !important;
@@ -304,14 +304,15 @@
                             <td colspan="5" class="py-4 text-center text-slate-400">Belum ada data pengeluaran pada periode ini.</td>
                         </tr>
                         @endforelse
-                    </tbody>
-                    <tfoot class="bg-slate-50 font-bold border-t border-slate-200 text-slate-800">
-                        <tr>
+
+                        @if($categoryBreakdown->count() > 0)
+                        <tr class="bg-slate-50 font-bold border-t-2 border-slate-200 text-slate-800">
                             <td colspan="3" class="py-2.5 px-3 text-right uppercase text-[11px] font-extrabold">TOTAL BIAYA PENGELUARAN</td>
                             <td class="py-2.5 px-3 text-right text-rose-700 font-black">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</td>
                             <td class="py-2.5 px-3 text-right">100%</td>
                         </tr>
-                    </tfoot>
+                        @endif
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -372,9 +373,10 @@
                             <td colspan="6" class="py-6 text-center text-slate-400">Tidak ada data transaksi yang tercatat pada rentang periode ini.</td>
                         </tr>
                         @endforelse
-                    </tbody>
-                    <tfoot class="bg-slate-50 font-bold border-t border-slate-200 text-slate-800">
-                        <tr>
+
+                        @if($allCombined->count() > 0)
+                        <!-- Baris Total Mutasi di Bagian Body Paling Bawah (Hanya Muncul Sekali di Akhir Data) -->
+                        <tr class="bg-slate-100/90 font-bold border-t-2 border-slate-300 text-slate-800">
                             <td colspan="4" class="py-2.5 px-2 text-right font-extrabold uppercase text-[10px] sm:text-[11px]">
                                 TOTAL MUTASI ({{ $allCombined->count() }} TRANSAKSI)
                             </td>
@@ -385,7 +387,8 @@
                                 - Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}
                             </td>
                         </tr>
-                    </tfoot>
+                        @endif
+                    </tbody>
                 </table>
             </div>
         </div>
