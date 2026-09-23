@@ -20,11 +20,13 @@
             <a href="{{ route('expenses.create') }}" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
                 &larr; Ke Form Pengeluaran
             </a>
+            @canExpense('template_create')
             <button type="button" onclick="openAddModal()"
                 class="inline-flex items-center gap-2 px-4 py-2.5 bg-nochi-orange hover:bg-nochi-orangeDark text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all active:scale-95">
                 <i data-lucide="plus" class="w-4 h-4 stroke-[3]"></i>
                 <span>+ Tambah Template Baru</span>
             </button>
+            @endcanExpense
         </div>
     </div>
 
@@ -68,6 +70,7 @@
                             {{ $tmpl->formatted_amount }}
                         </td>
                         <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                            @canExpense('template_toggle')
                             <form action="{{ route('master.templates.toggle', $tmpl->id) }}" method="POST" class="inline">
                                 @csrf
                                 <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold {{ $tmpl->is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600' }}" title="Klik untuk mengubah status">
@@ -75,13 +78,23 @@
                                     <span>{{ $tmpl->is_active ? 'Aktif' : 'Nonaktif' }}</span>
                                 </button>
                             </form>
+                            @else
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold {{ $tmpl->is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600' }}">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $tmpl->is_active ? 'bg-emerald-500' : 'bg-slate-400' }}"></span>
+                                <span>{{ $tmpl->is_active ? 'Aktif' : 'Nonaktif' }}</span>
+                            </span>
+                            @endcanExpense
                         </td>
                         <td class="py-3.5 px-4 text-center whitespace-nowrap">
                             <div class="inline-flex items-center gap-1">
+                                @canExpense('template_edit')
                                 <button type="button" onclick="openEditModal({{ json_encode($tmpl) }})"
                                     class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors" title="Edit Template">
                                     <i data-lucide="edit-2" class="w-4 h-4"></i>
                                 </button>
+                                @endcanExpense
+
+                                @canExpense('template_delete')
                                 <form action="{{ route('master.templates.destroy', $tmpl->id) }}" method="POST" onsubmit="return confirm('Hapus template ini?');" class="inline">
                                     @csrf
                                     @method('DELETE')
@@ -89,6 +102,7 @@
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                     </button>
                                 </form>
+                                @endcanExpense
                             </div>
                         </td>
                     </tr>

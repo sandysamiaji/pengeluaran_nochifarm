@@ -142,35 +142,104 @@
                 </div>
 
                 <!-- Desktop Navigation Menu -->
-                <nav id="desktopNavMenu" class="hidden md:flex items-center gap-2 bg-black/15 p-1 rounded-xl backdrop-blur-sm border border-white/10">
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('dashboard') ? 'bg-white text-maroon-900 shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
+                <nav id="desktopNavMenu" class="hidden md:flex items-center gap-1.5 bg-black/15 p-1 rounded-xl backdrop-blur-sm border border-white/10">
+                    @canExpense('menu_dashboard')
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('dashboard') ? 'bg-white text-maroon-900 shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
                         <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                        <span>Dashboard Transaksi</span>
+                        <span>Dashboard</span>
                     </a>
-                    <a href="{{ route('expenses.create') }}" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('expenses.create') ? 'bg-nochi-orange text-white shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
+                    @endcanExpense
+
+                    @canExpense('menu_expenses_create')
+                    <a href="{{ route('expenses.create') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('expenses.create') ? 'bg-nochi-orange text-white shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i>
                         <span>Catat Pengeluaran</span>
                     </a>
-                    <a href="{{ route('expenses.index') }}" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('expenses.index') ? 'bg-white text-maroon-900 shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
+                    @endcanExpense
+
+                    @canExpense('menu_expenses_index')
+                    <a href="{{ route('expenses.index') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('expenses.index') ? 'bg-white text-maroon-900 shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
                         <i data-lucide="receipt" class="w-4 h-4"></i>
                         <span>Riwayat Pengeluaran</span>
                     </a>
-                    <a href="{{ route('production.index') }}" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('production.*') ? 'bg-white text-maroon-900 shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
+                    @endcanExpense
+
+                    @canExpense('menu_production')
+                    <a href="{{ route('production.index') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('production.*') ? 'bg-white text-maroon-900 shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
                         <i data-lucide="egg" class="w-4 h-4"></i>
                         <span>Produksi Telur</span>
                     </a>
-                    <a href="{{ route('master.templates.index') }}" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('master.templates.*') ? 'bg-white text-maroon-900 shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
+                    @endcanExpense
+
+                    @canExpense('menu_master_templates')
+                    <a href="{{ route('master.templates.index') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('master.templates.*') ? 'bg-white text-maroon-900 shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
                         <i data-lucide="settings" class="w-4 h-4"></i>
                         <span>Master Template</span>
                     </a>
+                    @endcanExpense
+
+                    @if(auth()->check() && auth()->user()->role === 'admin')
+                    <a href="{{ route('master.permissions') }}" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('master.permissions*') ? 'bg-amber-400 text-maroon-950 shadow-sm' : 'text-amber-200 hover:text-white hover:bg-white/10' }} transition-all" title="Kelola Hak Akses Pengguna">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-amber-300"></i>
+                        <span>Hak Akses</span>
+                    </a>
+                    @endif
                 </nav>
 
-                <!-- Right Header Actions (Quick Links & Burger Button) -->
-                <div class="flex items-center gap-2">
-                    <a href="{{ route('expenses.create') }}" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-nochi-orange hover:bg-nochi-orangeDark text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95">
+                <!-- Right Header Actions (User Dropdown & Burger Button) -->
+                <div class="flex items-center gap-2.5">
+                    @canExpense('menu_expenses_create')
+                    <a href="{{ route('expenses.create') }}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-nochi-orange hover:bg-nochi-orangeDark text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         <span>Pengeluaran Baru</span>
                     </a>
+                    @endcanExpense
+
+                    @if(auth()->check())
+                    <!-- User Profile Dropdown Desktop -->
+                    <div class="relative hidden sm:inline-block text-left" id="userMenuContainer">
+                        <button type="button" onclick="toggleUserDropdown()"
+                            class="flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition-all text-white focus:outline-none">
+                            <div class="w-7 h-7 rounded-lg bg-orange-500 text-white font-extrabold flex items-center justify-center text-xs shadow-inner">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
+                            <div class="text-left leading-none max-w-[120px] truncate">
+                                <span class="text-xs font-bold block truncate">{{ auth()->user()->name }}</span>
+                                <span class="text-[9px] text-orange-200 font-semibold uppercase">{{ auth()->user()->role === 'admin' ? 'Admin' : 'Staf' }}</span>
+                            </div>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-white/70"></i>
+                        </button>
+
+                        <div id="userDropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 text-slate-800 z-50 animate-in fade-in zoom-in-95 duration-100">
+                            <div class="px-4 py-2 border-b border-slate-100">
+                                <p class="text-xs font-bold text-slate-900 truncate">{{ auth()->user()->name }}</p>
+                                <p class="text-[11px] text-slate-400 font-mono truncate">&#64;{{ auth()->user()->username ?: 'user' }}</p>
+                                <div class="mt-1">
+                                    <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-black uppercase {{ auth()->user()->role === 'admin' ? 'bg-maroon-100 text-maroon-900' : 'bg-slate-100 text-slate-700' }}">
+                                        {{ auth()->user()->role === 'admin' ? 'Administrator' : 'Pengguna Farm' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            @if(auth()->user()->role === 'admin')
+                            <a href="{{ route('master.permissions') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-rose-50 hover:text-maroon-900 transition-colors">
+                                <i data-lucide="shield-check" class="w-4 h-4 text-nochi-orange"></i>
+                                <span>Manajemen Hak Akses</span>
+                            </a>
+                            @endif
+
+                            <div class="border-t border-slate-100 my-1"></div>
+
+                            <form action="{{ route('logout') }}" method="POST" class="w-full">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors text-left">
+                                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                                    <span>Keluar / Logout</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @endif
 
                     <!-- Hamburger Button Mobile -->
                     <button onclick="toggleMobileDrawer()" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center text-white border border-white/15" title="Menu Navigasi">
@@ -196,31 +265,86 @@
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </div>
-        <div id="mobileDrawerMenu" class="p-4 flex-1 overflow-y-auto space-y-2">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold {{ request()->routeIs('dashboard') ? 'bg-rose-50 text-maroon-800' : 'text-slate-700 hover:bg-slate-50' }}">
-                <i data-lucide="home" class="w-5 h-5 text-maroon-700"></i>
+
+        @if(auth()->check())
+        <!-- Current User Profile in Drawer -->
+        <div class="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-maroon-800 text-white font-extrabold flex items-center justify-center text-sm shadow-xs">
+                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="text-xs font-black text-slate-800 truncate">{{ auth()->user()->name }}</p>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="px-1.5 py-0.2 rounded text-[9px] font-black uppercase {{ auth()->user()->role === 'admin' ? 'bg-rose-100 text-maroon-900' : 'bg-slate-200 text-slate-700' }}">
+                        {{ auth()->user()->role === 'admin' ? 'Admin' : 'Staf' }}
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-mono truncate">&#64;{{ auth()->user()->username ?: 'user' }}</span>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <div id="mobileDrawerMenu" class="p-4 flex-1 overflow-y-auto space-y-1.5">
+            @canExpense('menu_dashboard')
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold {{ request()->routeIs('dashboard') ? 'bg-rose-50 text-maroon-800' : 'text-slate-700 hover:bg-slate-50' }}">
+                <i data-lucide="home" class="w-4 h-4 text-maroon-700"></i>
                 <span>Beranda & Transaksi</span>
             </a>
-            <a href="{{ route('production.index') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold {{ request()->routeIs('production.*') ? 'bg-rose-50 text-maroon-800' : 'text-slate-700 hover:bg-slate-50' }}">
-                <i data-lucide="egg" class="w-5 h-5 text-amber-600"></i>
+            @endcanExpense
+
+            @canExpense('menu_production')
+            <a href="{{ route('production.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold {{ request()->routeIs('production.*') ? 'bg-rose-50 text-maroon-800' : 'text-slate-700 hover:bg-slate-50' }}">
+                <i data-lucide="egg" class="w-4 h-4 text-amber-600"></i>
                 <span>Produksi Telur</span>
             </a>
-            <a href="{{ route('expenses.create') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold {{ request()->routeIs('expenses.create') ? 'bg-orange-50 text-nochi-orange' : 'text-slate-700 hover:bg-slate-50' }}">
-                <i data-lucide="plus-circle" class="w-5 h-5 text-nochi-orange"></i>
+            @endcanExpense
+
+            @canExpense('menu_expenses_create')
+            <a href="{{ route('expenses.create') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold {{ request()->routeIs('expenses.create') ? 'bg-orange-50 text-nochi-orange' : 'text-slate-700 hover:bg-slate-50' }}">
+                <i data-lucide="plus-circle" class="w-4 h-4 text-nochi-orange"></i>
                 <span>Catat Pengeluaran Kandang</span>
             </a>
-            <a href="{{ route('expenses.index') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold {{ request()->routeIs('expenses.index') ? 'bg-rose-50 text-maroon-800' : 'text-slate-700 hover:bg-slate-50' }}">
-                <i data-lucide="receipt" class="w-5 h-5 text-maroon-700"></i>
+            @endcanExpense
+
+            @canExpense('menu_expenses_index')
+            <a href="{{ route('expenses.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold {{ request()->routeIs('expenses.index') ? 'bg-rose-50 text-maroon-800' : 'text-slate-700 hover:bg-slate-50' }}">
+                <i data-lucide="receipt" class="w-4 h-4 text-maroon-700"></i>
                 <span>Daftar Pengeluaran</span>
             </a>
-            <a href="{{ route('master.templates.index') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold {{ request()->routeIs('master.templates.*') ? 'bg-rose-50 text-maroon-800' : 'text-slate-700 hover:bg-slate-50' }}">
-                <i data-lucide="settings" class="w-5 h-5 text-maroon-700"></i>
+            @endcanExpense
+
+            @canExpense('menu_master_templates')
+            <a href="{{ route('master.templates.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold {{ request()->routeIs('master.templates.*') ? 'bg-rose-50 text-maroon-800' : 'text-slate-700 hover:bg-slate-50' }}">
+                <i data-lucide="settings" class="w-4 h-4 text-maroon-700"></i>
                 <span>Master Template Pengeluaran</span>
             </a>
+            @endcanExpense
+
+            @if(auth()->check() && auth()->user()->role === 'admin')
+            <div class="pt-2 my-2 border-t border-slate-100">
+                <span class="px-3.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Pengaturan Admin</span>
+                <a href="{{ route('master.permissions') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold {{ request()->routeIs('master.permissions*') ? 'bg-amber-50 text-amber-900 border border-amber-200' : 'text-amber-800 hover:bg-amber-50' }}">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-amber-600"></i>
+                    <span>Manajemen Hak Akses</span>
+                </a>
+            </div>
+            @endif
         </div>
-        <div class="p-4 border-t border-slate-100 bg-slate-50 text-center">
-            <span class="text-[11px] text-slate-400 font-medium">Nochi Farm &bull; Peternak Ayam Petelur &copy; {{ date('Y') }}</span>
+
+        @if(auth()->check())
+        <div class="p-4 border-t border-slate-100 bg-slate-50 space-y-2">
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span>Keluar / Logout</span>
+                </button>
+            </form>
+            <div class="text-center">
+                <span class="text-[10px] text-slate-400 font-medium">Nochi Farm &bull; Peternak Ayam Petelur &copy; {{ date('Y') }}</span>
+            </div>
         </div>
+        @endif
     </div>
 
     <!-- Flash Notifications -->
@@ -245,18 +369,21 @@
         @yield('content')
     </main>
 
-    <!-- Bottom Navigation Bar Mobile (Presisi Sesuai Mockup) -->
+    <!-- Bottom Navigation Bar Mobile (Sesuai Hak Akses) -->
     <nav id="mobileBottomNav" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] sm:max-w-md z-40 bg-white border-t border-slate-200 shadow-2xl px-2 py-1 md:hidden">
-        <div class="grid grid-cols-5 items-center text-center">
+        <div class="flex items-center justify-around text-center">
             
+            @canExpense('menu_dashboard')
             <!-- 1. Beranda -->
-            <a href="{{ route('dashboard') }}" class="flex flex-col items-center justify-center py-1 {{ request()->routeIs('dashboard') ? 'text-nochi-orange font-bold' : 'text-slate-400 hover:text-slate-600 font-medium' }} transition-transform active:scale-95">
+            <a href="{{ route('dashboard') }}" class="flex-1 flex flex-col items-center justify-center py-1 {{ request()->routeIs('dashboard') ? 'text-nochi-orange font-bold' : 'text-slate-400 hover:text-slate-600 font-medium' }} transition-transform active:scale-95">
                 <i data-lucide="home" class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'stroke-[2.5]' : 'stroke-2' }}"></i>
                 <span class="text-[10px] mt-1">Beranda</span>
             </a>
+            @endcanExpense
 
+            @canExpense('menu_production')
             <!-- 2. Produksi -->
-            <a href="{{ route('production.index') }}" class="flex flex-col items-center justify-center py-1 {{ request()->routeIs('production.*') ? 'text-nochi-orange font-bold' : 'text-slate-400 hover:text-slate-600 font-medium' }} transition-transform active:scale-95">
+            <a href="{{ route('production.index') }}" class="flex-1 flex flex-col items-center justify-center py-1 {{ request()->routeIs('production.*') ? 'text-nochi-orange font-bold' : 'text-slate-400 hover:text-slate-600 font-medium' }} transition-transform active:scale-95">
                 <div class="relative">
                     <i data-lucide="egg" class="w-5 h-5 {{ request()->routeIs('production.*') ? 'stroke-[2.5]' : 'stroke-2' }}"></i>
                     @if(request()->routeIs('production.*'))
@@ -265,17 +392,21 @@
                 </div>
                 <span class="text-[10px] mt-1">Produksi</span>
             </a>
+            @endcanExpense
 
+            @canExpense('menu_expenses_create')
             <!-- 3. Tambah (Center Large Orange Button) -->
-            <div class="flex flex-col items-center justify-center -mt-5">
+            <div class="flex-1 flex flex-col items-center justify-center -mt-5">
                 <a href="{{ route('expenses.create') }}" class="w-12 h-12 rounded-full bg-nochi-orange hover:bg-nochi-orangeDark text-white flex items-center justify-center shadow-lg shadow-orange-500/40 border-2 border-white transition-transform active:scale-90" title="Tambah Pengeluaran">
                     <i data-lucide="plus" class="w-7 h-7 stroke-[2.8]"></i>
                 </a>
                 <span class="text-[10px] mt-1 font-bold text-nochi-orange">Tambah</span>
             </div>
+            @endcanExpense
 
+            @canExpense('menu_expenses_index')
             <!-- 4. Pengeluaran (Active Indicator) -->
-            <a href="{{ route('expenses.index') }}" class="flex flex-col items-center justify-center py-1 {{ request()->routeIs('expenses.*') ? 'text-nochi-orange font-bold' : 'text-slate-400 hover:text-slate-600 font-medium' }} transition-transform active:scale-95">
+            <a href="{{ route('expenses.index') }}" class="flex-1 flex flex-col items-center justify-center py-1 {{ request()->routeIs('expenses.*') ? 'text-nochi-orange font-bold' : 'text-slate-400 hover:text-slate-600 font-medium' }} transition-transform active:scale-95">
                 <div class="relative">
                     <i data-lucide="wallet" class="w-5 h-5 {{ request()->routeIs('expenses.*') ? 'stroke-[2.5]' : 'stroke-2' }}"></i>
                     @if(request()->routeIs('expenses.*'))
@@ -284,9 +415,10 @@
                 </div>
                 <span class="text-[10px] mt-1">Pengeluaran</span>
             </a>
+            @endcanExpense
 
-            <!-- 5. Lainnya -->
-            <button onclick="toggleMobileDrawer()" class="flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-600 font-medium transition-transform active:scale-95">
+            <!-- 5. Lainnya (Drawer Toggle) -->
+            <button onclick="toggleMobileDrawer()" class="flex-1 flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-600 font-medium transition-transform active:scale-95">
                 <i data-lucide="more-horizontal" class="w-5 h-5 stroke-2"></i>
                 <span class="text-[10px] mt-1">Lainnya</span>
             </button>
@@ -311,6 +443,21 @@
                 backdrop.classList.add('opacity-0', 'pointer-events-none');
             }
         }
+
+        function toggleUserDropdown() {
+            const menu = document.getElementById('userDropdownMenu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const container = document.getElementById('userMenuContainer');
+            const menu = document.getElementById('userDropdownMenu');
+            if (container && menu && !container.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
 
         // -------------------------------------------------------------
         // SPA Instant Navigation (Ganti Halaman / Pagination Tanpa Refresh)

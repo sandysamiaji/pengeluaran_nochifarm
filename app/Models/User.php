@@ -47,5 +47,25 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_active' => 'boolean',
     ];
+
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    public function expensePermissions()
+    {
+        return $this->hasMany(ExpenseUserPermission::class);
+    }
+
+    /**
+     * Helper untuk memeriksa hak akses fitur/menu user di Nochi Farm Pengeluaran
+     */
+    public function canExpense(string $permissionKey): bool
+    {
+        return \App\Services\ExpensePermissionService::canAccess($this, $permissionKey);
+    }
 }
+

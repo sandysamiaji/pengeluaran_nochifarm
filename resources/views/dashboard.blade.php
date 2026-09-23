@@ -20,6 +20,7 @@
         </div>
 
         <!-- Quick Traveloka Date Filter Trigger Bar -->
+        @canExpense('dashboard_filter_date')
         <div class="flex items-center gap-2">
             <button type="button" onclick="openTravelokaFilterModal()"
                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border {{ $isFilterActive ? 'bg-orange-50 border-orange-300 text-nochi-orange shadow-xs' : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700' }} text-xs sm:text-sm font-bold transition-all">
@@ -40,6 +41,7 @@
                 </a>
             @endif
         </div>
+        @endcanExpense
     </div>
 
     <!-- Active Filter Banner Alert (If Active) -->

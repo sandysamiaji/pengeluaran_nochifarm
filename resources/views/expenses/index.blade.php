@@ -17,11 +17,13 @@
         </div>
 
         <div class="flex items-center gap-2">
+            @canExpense('expense_create')
             <a href="{{ route('expenses.create') }}"
                 class="inline-flex items-center gap-2 px-4 py-2.5 bg-nochi-orange hover:bg-nochi-orangeDark text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all active:scale-95">
                 <i data-lucide="plus" class="w-4 h-4 stroke-[3]"></i>
                 <span>+ Catat Pengeluaran Baru</span>
             </a>
+            @endcanExpense
         </div>
     </div>
 
@@ -152,21 +154,29 @@
                         </td>
                         <td class="py-3.5 px-4 text-center whitespace-nowrap">
                             <div class="inline-flex items-center gap-1">
+                                @canExpense('expense_view_detail')
                                 <!-- Tombol Lihat Detail -->
                                 <button type="button" onclick="openExpenseDetailModal({{ $exp->id }})"
                                     class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors" title="Lihat Detail">
                                     <i data-lucide="eye" class="w-4 h-4"></i>
                                 </button>
+                                @endcanExpense
+
+                                @canExpense('expense_edit')
                                 <!-- Tombol Edit -->
                                 <button type="button" onclick="openEditExpenseModal({{ $exp->id }})"
                                     class="p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 transition-colors" title="Edit Pengeluaran">
                                     <i data-lucide="pencil" class="w-4 h-4"></i>
                                 </button>
+                                @endcanExpense
+
+                                @canExpense('expense_delete')
                                 <!-- Tombol Hapus -->
                                 <button type="button" onclick="confirmDeleteExpenseLocal({{ $exp->id }}, '{{ $exp->transaction_code }}')"
                                     class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors" title="Hapus Pengeluaran">
                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>
+                                @endcanExpense
                             </div>
                         </td>
                     </tr>
@@ -216,18 +226,25 @@
 
                         <div id="exp-drop-{{ $exp->id }}"
                              class="hidden dropdown-menu-exp absolute right-0 top-9 z-30 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 text-xs text-slate-700 animate-in fade-in zoom-in-95 duration-100">
+                            @canExpense('expense_view_detail')
                             <button type="button"
                                 onclick="event.stopPropagation(); closeAllExpenseDropdowns(); openExpenseDetailModal({{ $exp->id }})"
                                 class="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 font-medium transition-colors">
                                 <i data-lucide="eye" class="w-4 h-4 text-slate-500"></i>
                                 <span>Lihat Detail</span>
                             </button>
+                            @endcanExpense
+
+                            @canExpense('expense_edit')
                             <button type="button"
                                 onclick="event.stopPropagation(); closeAllExpenseDropdowns(); openEditExpenseModal({{ $exp->id }})"
                                 class="w-full px-3.5 py-2.5 text-left hover:bg-amber-50 flex items-center gap-2.5 font-medium text-amber-700 transition-colors">
                                 <i data-lucide="pencil" class="w-4 h-4 text-amber-600"></i>
                                 <span>Edit Pengeluaran</span>
                             </button>
+                            @endcanExpense
+
+                            @canExpense('expense_delete')
                             <div class="border-t border-slate-100 my-1"></div>
                             <button type="button"
                                 onclick="event.stopPropagation(); closeAllExpenseDropdowns(); confirmDeleteExpenseLocal({{ $exp->id }}, '{{ $exp->transaction_code }}')"
@@ -235,6 +252,7 @@
                                 <i data-lucide="trash-2" class="w-4 h-4 text-rose-600"></i>
                                 <span>Hapus Pengeluaran</span>
                             </button>
+                            @endcanExpense
                         </div>
                     </div>
                 </div>
