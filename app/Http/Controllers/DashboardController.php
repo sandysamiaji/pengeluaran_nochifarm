@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Sale;
 use App\Models\Expense;
 use App\Services\WarehouseInventoryService;
@@ -187,11 +188,13 @@ class DashboardController extends Controller
         );
 
         // 5. Data Chart: Rekapitulasi per Kategori Pengeluaran (Donut Chart)
-        $categoryBreakdown = $expenses->groupBy('category')->map(function ($items, $cat) use ($totalPengeluaran) {
-            $total = $items->sum('amount');
+        $categoryBreakdown = $expenses->groupBy(function($item) {
+            return !empty(trim($item->category ?? '')) ? trim($item->category) : 'Lainnya';
+        })->map(function ($items, $cat) use ($totalPengeluaran) {
+            $total = (float)$items->sum('amount');
             $pct = $totalPengeluaran > 0 ? round(($total / $totalPengeluaran) * 100, 1) : 0;
             return [
-                'category' => $cat,
+                'category' => (string)$cat,
                 'total' => $total,
                 'count' => $items->count(),
                 'percentage' => $pct,
@@ -199,39 +202,47 @@ class DashboardController extends Controller
         })->sortByDesc('total')->values();
 
         // 6. Data Chart: Tren Arus Kas Bulanan (Bar/Line Chart)
-        $allSalesForChart = Sale::selectRaw('DATE_FORMAT(date, "%Y-%m") as month, SUM(total_amount) as total')
-            ->groupBy('month')
-            ->orderBy('month', 'asc')
-            ->pluck('total', 'month')
-            ->toArray();
-
-        $allExpensesForChart = Expense::selectRaw('DATE_FORMAT(date, "%Y-%m") as month, SUM(amount) as total')
-            ->groupBy('month')
-            ->orderBy('month', 'asc')
-            ->pluck('total', 'month')
-            ->toArray();
-
-        // Ambil daftar unik semua bulan
-        $monthsUnion = array_unique(array_merge(array_keys($allSalesForChart), array_keys($allExpensesForChart)));
-        sort($monthsUnion);
-
-        // Jika data kurang dari 3 bulan, tambahkan rentang default
-        if (count($monthsUnion) < 3) {
-            for ($i = 2; $i >= 0; $i--) {
-                $m = Carbon::now()->subMonths($i)->format('Y-m');
-                if (!in_array($m, $monthsUnion)) {
-                    $monthsUnion[] = $m;
-                }
-            }
-            sort($monthsUnion);
+        try {
+            $allSalesForChart = Sale::selectRaw('DATE_FORMAT(date, "%Y-%m") as month, SUM(total_amount) as total')
+                ->groupBy(DB::raw('DATE_FORMAT(date, "%Y-%m")'))
+                ->orderBy('month', 'asc')
+                ->pluck('total', 'month')
+                ->toArray();
+        } catch (\Throwable $e) {
+            $allSalesForChart = [];
         }
+
+        try {
+            $allExpensesForChart = Expense::selectRaw('DATE_FORMAT(date, "%Y-%m") as month, SUM(amount) as total')
+                ->groupBy(DB::raw('DATE_FORMAT(date, "%Y-%m")'))
+                ->orderBy('month', 'asc')
+                ->pluck('total', 'month')
+                ->toArray();
+        } catch (\Throwable $e) {
+            $allExpensesForChart = [];
+        }
+
+        // Ambil daftar unik semua bulan (minimal 6 bulan terakhir s/d bulan sekarang)
+        $monthsUnion = array_unique(array_merge(array_keys($allSalesForChart), array_keys($allExpensesForChart)));
+        
+        for ($i = 5; $i >= 0; $i--) {
+            $m = Carbon::now()->subMonths($i)->format('Y-m');
+            if (!in_array($m, $monthsUnion)) {
+                $monthsUnion[] = $m;
+            }
+        }
+        sort($monthsUnion);
 
         $chartLabels = [];
         $chartIncome = [];
         $chartExpense = [];
 
         foreach ($monthsUnion as $m) {
-            $chartLabels[] = Carbon::createFromFormat('Y-m', $m)->translatedFormat('M Y');
+            try {
+                $chartLabels[] = Carbon::createFromFormat('Y-m', $m)->translatedFormat('M Y');
+            } catch (\Throwable $e) {
+                $chartLabels[] = $m;
+            }
             $chartIncome[] = (float)($allSalesForChart[$m] ?? 0);
             $chartExpense[] = (float)($allExpensesForChart[$m] ?? 0);
         }

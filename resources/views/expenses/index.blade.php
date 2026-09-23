@@ -3,7 +3,7 @@
 @section('title', 'Daftar Pengeluaran Kandang - NOCHI FARM')
 
 @section('content')
-<div class="space-y-6">
+<div id="expensesTableSection" class="space-y-6">
 
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-2xl border border-slate-100 shadow-xs">

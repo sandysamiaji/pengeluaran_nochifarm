@@ -434,16 +434,24 @@
                 window.dispatchEvent(new CustomEvent('page:loaded'));
 
                 // 9. Smooth Scroll ke Elemen Target / Atas Halaman
-                if (scrollTarget) {
-                    if (typeof scrollTarget === 'string') {
-                        const el = document.querySelector(scrollTarget);
-                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    } else if (scrollTarget instanceof HTMLElement) {
-                        scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => {
+                    let targetEl = null;
+                    if (typeof scrollTarget === 'string' && scrollTarget) {
+                        targetEl = document.querySelector(scrollTarget);
                     }
-                } else {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
+
+                    if (targetEl) {
+                        const headerOffset = 85;
+                        const elementPosition = targetEl.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                        window.scrollTo({
+                            top: Math.max(0, offsetPosition),
+                            behavior: 'smooth'
+                        });
+                    } else if (!scrollTarget) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                }, 50);
 
             } catch (error) {
                 console.error('SPA Navigation Error:', error);
@@ -472,11 +480,19 @@
 
             e.preventDefault();
 
-            // Jika link adalah paginasi (?page=X), scroll lembut ke kontainer data
+            // Tentukan target scroll cerdas (Dashboard transaksi vs Pengeluaran table)
             const isPagination = url.searchParams.has('page');
+            const hasType = url.searchParams.has('type');
             let scrollTarget = null;
-            if (isPagination) {
-                scrollTarget = link.closest('section') || link.closest('.farm-card') || '#mainContent';
+
+            if (link.closest('#semuaDataTransaksiSection') || isPagination || hasType) {
+                if (url.pathname === '/' || url.pathname.endsWith('/dashboard') || url.pathname === '') {
+                    scrollTarget = '#semuaDataTransaksiSection';
+                } else if (url.pathname.includes('/pengeluaran')) {
+                    scrollTarget = '#expensesTableSection';
+                }
+            } else if (link.closest('#expensesTableSection')) {
+                scrollTarget = '#expensesTableSection';
             }
 
             spaNavigate(url.href, true, scrollTarget);
@@ -500,7 +516,14 @@
             const actionUrl = new URL(form.action || window.location.href, window.location.origin);
             actionUrl.search = searchParams.toString();
 
-            spaNavigate(actionUrl.href, true, form.closest('section') || '#mainContent');
+            let scrollTarget = null;
+            if (form.closest('#semuaDataTransaksiSection')) {
+                scrollTarget = '#semuaDataTransaksiSection';
+            } else if (form.closest('#expensesTableSection') || form.closest('.space-y-6')) {
+                scrollTarget = '#expensesTableSection';
+            }
+
+            spaNavigate(actionUrl.href, true, scrollTarget);
         });
 
         // Handle Tombol Back / Forward di Browser

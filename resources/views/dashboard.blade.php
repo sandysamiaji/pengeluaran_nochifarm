@@ -566,7 +566,7 @@
 
 
     <!-- Quick Action Banner & Search / Filter Controls -->
-    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-xs space-y-4">
+    <div id="semuaDataTransaksiSection" class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-xs space-y-4">
         
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
@@ -2146,17 +2146,28 @@
     // Chart.js Visualizations (Cashflow Trend & Category Doughnut)
     // -------------------------------------------------------------
     function initDashboardCharts() {
+        if (typeof Chart === 'undefined') {
+            return;
+        }
+
         // 1. Tren Arus Kas Bulanan
         const ctxTrend = document.getElementById('cashflowTrendChart');
-        if (ctxTrend && typeof Chart !== 'undefined') {
-            const existingTrend = Chart.getChart('cashflowTrendChart');
-            if (existingTrend) existingTrend.destroy();
+        if (ctxTrend) {
+            try {
+                if (window.cashflowChartInstance) {
+                    window.cashflowChartInstance.destroy();
+                }
+                const existingTrend = Chart.getChart(ctxTrend);
+                if (existingTrend) existingTrend.destroy();
+            } catch (e) {
+                console.warn('Error destroying old trend chart:', e);
+            }
 
             const chartLabels = {!! json_encode($chartLabels) !!};
             const chartIncome = {!! json_encode($chartIncome) !!};
             const chartExpense = {!! json_encode($chartExpense) !!};
 
-            new Chart(ctxTrend, {
+            window.cashflowChartInstance = new Chart(ctxTrend, {
                 type: 'bar',
                 data: {
                     labels: chartLabels,
@@ -2187,7 +2198,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return context.dataset.label + ': Rp ' + context.parsed.y.toLocaleString('id-ID');
+                                    return context.dataset.label + ': Rp ' + Number(context.parsed.y || 0).toLocaleString('id-ID');
                                 }
                             }
                         }
@@ -2213,23 +2224,31 @@
 
         // 2. Komposisi Kategori Pengeluaran (Doughnut)
         const ctxCategory = document.getElementById('expenseCategoryChart');
-        if (ctxCategory && typeof Chart !== 'undefined') {
-            const existingCat = Chart.getChart('expenseCategoryChart');
-            if (existingCat) existingCat.destroy();
+        if (ctxCategory) {
+            try {
+                if (window.categoryChartInstance) {
+                    window.categoryChartInstance.destroy();
+                }
+                const existingCat = Chart.getChart(ctxCategory);
+                if (existingCat) existingCat.destroy();
+            } catch (e) {
+                console.warn('Error destroying old category chart:', e);
+            }
 
             const catData = {!! json_encode($categoryBreakdown) !!};
-            const labels = catData.map(c => c.category);
-            const totals = catData.map(c => c.total);
+            const hasData = Array.isArray(catData) && catData.length > 0;
+            const labels = hasData ? catData.map(c => c.category) : ['Belum Ada Pengeluaran'];
+            const totals = hasData ? catData.map(c => c.total) : [1];
 
             const palette = ['#800020', '#f95721', '#0284c7', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#64748b'];
 
-            new Chart(ctxCategory, {
+            window.categoryChartInstance = new Chart(ctxCategory, {
                 type: 'doughnut',
                 data: {
-                    labels: labels.length ? labels : ['Belum Ada Pengeluaran'],
+                    labels: labels,
                     datasets: [{
-                        data: totals.length ? totals : [1],
-                        backgroundColor: totals.length ? palette.slice(0, totals.length) : ['#e2e8f0'],
+                        data: totals,
+                        backgroundColor: hasData ? palette.slice(0, totals.length) : ['#e2e8f0'],
                         borderWidth: 2,
                         borderColor: '#ffffff'
                     }]
@@ -2243,8 +2262,8 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    if (!totals.length) return 'Belum ada data';
-                                    return context.label + ': Rp ' + context.parsed.toLocaleString('id-ID');
+                                    if (!hasData) return ' Belum ada data pengeluaran';
+                                    return ' ' + context.label + ': Rp ' + Number(context.parsed || 0).toLocaleString('id-ID');
                                 }
                             }
                         }
@@ -2254,11 +2273,20 @@
         }
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initDashboardCharts);
-    } else {
-        initDashboardCharts();
+    function ensureChartJsAndInit(attempts = 0) {
+        if (typeof Chart !== 'undefined') {
+            initDashboardCharts();
+        } else if (attempts < 20) {
+            setTimeout(() => ensureChartJsAndInit(attempts + 1), 150);
+        }
     }
-    window.addEventListener('page:loaded', initDashboardCharts);
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => ensureChartJsAndInit(0));
+    } else {
+        ensureChartJsAndInit(0);
+    }
+    window.addEventListener('load', () => ensureChartJsAndInit(0));
+    window.addEventListener('page:loaded', () => ensureChartJsAndInit(0));
 </script>
 @endpush
