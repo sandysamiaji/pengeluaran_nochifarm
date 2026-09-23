@@ -508,56 +508,134 @@
 
     </div>
 
-    <!-- Visual Analytics: Charts Section (Chart.js) -->
+    <!-- Visual Analytics: Charts Section (Chart.js & Monthly Breakdown) -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         
-        <!-- Chart 1: Cashflow Trend (Pemasukan vs Pengeluaran) -->
+        <!-- Chart 1: Cashflow Trend (Pemasukan vs Pengeluaran Per Bulan) -->
         <div class="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-100 shadow-xs flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-nochi-orange"></i>
-                        <span>Tren Arus Kas (Pemasukan vs Pengeluaran)</span>
-                    </h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Perbandingan omzet penjualan telur/pakan terhadap biaya operasional bulanan</p>
+            <div>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4 text-nochi-orange"></i>
+                            <span>Tren Arus Kas (Pemasukan vs Pengeluaran)</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Perbandingan omzet penjualan telur/pakan terhadap biaya operasional bulanan</p>
+                    </div>
+                    <div class="flex items-center gap-3 text-[11px] font-bold">
+                        <span class="flex items-center gap-1.5 text-emerald-600">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Pemasukan (Omzet)
+                        </span>
+                        <span class="flex items-center gap-1.5 text-rose-600">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Pengeluaran (Biaya)
+                        </span>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3 text-[11px] font-bold">
-                    <span class="flex items-center gap-1.5 text-emerald-600">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Pemasukan
-                    </span>
-                    <span class="flex items-center gap-1.5 text-rose-600">
-                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Pengeluaran
-                    </span>
+
+                <div class="relative h-64 sm:h-72 w-full">
+                    <canvas id="cashflowTrendChart" class="w-full h-full block"></canvas>
                 </div>
             </div>
-            <div class="relative h-64 sm:h-72 w-full">
-                <canvas id="cashflowTrendChart"></canvas>
+
+            <!-- Rekap Realtime Per Bulan (Uang Didapatkan vs Dikeluarkan) -->
+            <div class="mt-4 pt-3 border-t border-slate-100">
+                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
+                    <span>Rincian Arus Kas Per Bulan:</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    @foreach(array_slice($monthlyBreakdown, 0, 3) as $mb)
+                    <div class="p-2.5 rounded-xl border {{ $mb['has_activity'] ? 'bg-slate-50 border-slate-200' : 'bg-slate-50/50 border-slate-100 opacity-70' }}">
+                        <div class="flex items-center justify-between text-xs font-bold text-slate-800 mb-1.5">
+                            <span>{{ $mb['label'] }}</span>
+                            @if($mb['net'] > 0)
+                                <span class="text-[10px] text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded font-bold">Surplus</span>
+                            @elseif($mb['net'] < 0)
+                                <span class="text-[10px] text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded font-bold">Defisit</span>
+                            @endif
+                        </div>
+                        <div class="space-y-0.5 text-[11px]">
+                            <div class="flex items-center justify-between text-slate-600">
+                                <span class="flex items-center gap-1 text-emerald-600 font-semibold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Masuk:
+                                </span>
+                                <span class="font-bold text-emerald-700">+ Rp {{ number_format($mb['income'], 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-slate-600">
+                                <span class="flex items-center gap-1 text-rose-600 font-semibold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Keluar:
+                                </span>
+                                <span class="font-bold text-rose-700">- Rp {{ number_format($mb['expense'], 0, ',', '.') }}</span>
+                            </div>
+                            <div class="pt-1 mt-1 border-t border-slate-200 flex items-center justify-between font-extrabold text-[11px]">
+                                <span class="text-slate-500">Sisa Kas:</span>
+                                <span class="{{ $mb['net'] >= 0 ? 'text-slate-900' : 'text-rose-600' }}">
+                                    Rp {{ number_format($mb['net'], 0, ',', '.') }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
             </div>
         </div>
 
-        <!-- Chart 2: Category Breakdown (Doughnut Chart) -->
+        <!-- Chart 2: Category Breakdown (Doughnut Chart & Pengeluaran Terbesar) -->
         <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-xs flex flex-col justify-between">
             <div>
                 <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2 mb-1">
                     <i data-lucide="pie-chart" class="w-4 h-4 text-maroon-800"></i>
                     <span>Komposisi Pengeluaran (%)</span>
                 </h3>
-                <p class="text-[11px] text-slate-400 mb-3">Distribusi pos biaya operasional kandang</p>
+                <p class="text-[11px] text-slate-400 mb-2">Distribusi pos biaya operasional kandang</p>
+                
+                @if($categoryBreakdown->isNotEmpty() && $totalPengeluaran > 0)
+                @php $topCat = $categoryBreakdown->first(); @endphp
+                <!-- Highlight Pengeluaran Terbesar -->
+                <div class="my-2 p-2.5 rounded-xl bg-rose-50 border border-rose-200/80 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-rose-500 text-white flex items-center justify-center text-xs font-black shadow-xs">
+                            1
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-rose-800 uppercase tracking-wider block">Pengeluaran Terbesar</span>
+                            <span class="text-xs font-black text-slate-900">{{ $topCat['category'] }}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-black text-rose-700 block">Rp {{ number_format($topCat['total'], 0, ',', '.') }}</span>
+                        <span class="text-[10px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded-md inline-block">
+                            {{ $topCat['percentage'] }}% dari total
+                        </span>
+                    </div>
+                </div>
+                @endif
             </div>
             
-            <div class="relative h-48 w-full flex items-center justify-center my-1">
-                <canvas id="expenseCategoryChart"></canvas>
+            <div class="relative h-44 w-full flex items-center justify-center my-2">
+                <canvas id="expenseCategoryChart" class="w-full h-full block"></canvas>
             </div>
 
-            <!-- Top Expense Categories List -->
-            <div class="mt-3 divide-y divide-slate-100 text-[11px] max-h-36 overflow-y-auto">
-                @forelse($categoryBreakdown->take(4) as $cb)
-                <div class="py-1.5 flex items-center justify-between">
-                    <span class="font-semibold text-slate-700 truncate max-w-[55%]">{{ $cb['category'] }}</span>
-                    <span class="font-bold text-slate-800">Rp {{ number_format($cb['total'], 0, ',', '.') }} <span class="text-slate-400 font-normal">({{ $cb['percentage'] }}%)</span></span>
+            <!-- List Kategori Pengeluaran Lengkap dengan Progress Bar -->
+            <div class="mt-2 divide-y divide-slate-100 text-[11px] max-h-44 overflow-y-auto">
+                @forelse($categoryBreakdown as $cb)
+                <div class="py-2">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-bold text-slate-700 truncate max-w-[55%]">{{ $cb['category'] }}</span>
+                        <span class="font-bold text-slate-800">
+                            Rp {{ number_format($cb['total'], 0, ',', '.') }}
+                            <span class="text-rose-600 font-extrabold ml-1">({{ $cb['percentage'] }}%)</span>
+                        </span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-gradient-to-r from-rose-500 to-amber-500 h-full rounded-full" style="width: {{ $cb['percentage'] }}%"></div>
+                    </div>
                 </div>
                 @empty
-                <div class="py-2 text-center text-slate-400">Belum ada data pengeluaran</div>
+                <div class="py-3 text-center text-slate-400 bg-slate-50 rounded-xl">
+                    <i data-lucide="info" class="w-4 h-4 text-slate-400 mx-auto mb-1"></i>
+                    <span>Belum ada data pengeluaran untuk periode ini</span>
+                </div>
                 @endforelse
             </div>
         </div>
@@ -2162,7 +2240,8 @@
             const chartIncome = {!! json_encode($chartIncome) !!};
             const chartExpense = {!! json_encode($chartExpense) !!};
 
-            window.cashflowChartInstance = new Chart(ctxTrend, {
+            const ctx = ctxTrend.getContext('2d');
+            window.cashflowChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: chartLabels,
@@ -2235,7 +2314,8 @@
 
             const palette = ['#800020', '#f95721', '#0284c7', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#64748b'];
 
-            window.categoryChartInstance = new Chart(ctxCategory, {
+            const ctxCat = ctxCategory.getContext('2d');
+            window.categoryChartInstance = new Chart(ctxCat, {
                 type: 'doughnut',
                 data: {
                     labels: labels,

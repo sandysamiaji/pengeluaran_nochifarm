@@ -267,19 +267,31 @@ class DashboardController extends Controller
         }
         sort($monthsUnion);
 
-        $chartLabels = [];
-        $chartIncome = [];
-        $chartExpense = [];
-
+        $monthlyBreakdown = [];
         foreach ($monthsUnion as $m) {
             try {
                 $chartLabels[] = Carbon::createFromFormat('Y-m', $m)->translatedFormat('M Y');
+                $fullLabel = Carbon::createFromFormat('Y-m', $m)->translatedFormat('F Y');
             } catch (\Throwable $e) {
                 $chartLabels[] = $m;
+                $fullLabel = $m;
             }
-            $chartIncome[] = (float)($allSalesForChart[$m] ?? 0);
-            $chartExpense[] = (float)($allExpensesForChart[$m] ?? 0);
+            $inc = (float)($allSalesForChart[$m] ?? 0);
+            $exp = (float)($allExpensesForChart[$m] ?? 0);
+            $chartIncome[] = $inc;
+            $chartExpense[] = $exp;
+
+            $monthlyBreakdown[] = [
+                'month_key' => $m,
+                'label' => $fullLabel,
+                'short_label' => $chartLabels[count($chartLabels) - 1],
+                'income' => $inc,
+                'expense' => $exp,
+                'net' => $inc - $exp,
+                'has_activity' => ($inc > 0 || $exp > 0),
+            ];
         }
+        $monthlyBreakdown = array_reverse($monthlyBreakdown);
 
         // 7. Format Pesan WhatsApp Share
         $periodeStr = $isFilterActive
@@ -337,7 +349,8 @@ class DashboardController extends Controller
             'chartExpense',
             'waUrl',
             'inventorySummary',
-            'categories'
+            'categories',
+            'monthlyBreakdown'
         ));
     }
 
