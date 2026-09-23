@@ -1450,9 +1450,6 @@
     </div>
 </div>
 
-@endsection
-
-@push('scripts')
 <script>
     // -------------------------------------------------------------
     // Financial Formula Modal Controls (% Margin, OPEX, Kas & Bank)
@@ -2299,4 +2296,4 @@
         }
     });
 </script>
-@endpush
+@endsection
