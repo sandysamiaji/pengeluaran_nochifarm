@@ -79,8 +79,12 @@ class DashboardController extends Controller
                 })->implode(', ');
 
                 $penginputUser = $sale->user;
+                $penginputUsername = $penginputUser ? ($penginputUser->username ?: $penginputUser->name) : 'admin';
+                $penginputName = $penginputUser ? $penginputUser->name : 'Kasir / Admin';
+
                 $trip = $sale->trip;
                 $tripUser = $trip ? $trip->user : null;
+                $perjalananUsername = $tripUser ? ($tripUser->username ?: $tripUser->name) : ($trip ? 'Driver' : null);
                 $perjalananName = $tripUser ? $tripUser->name : ($trip ? 'Petugas Trip' : null);
                 $tripCode = $trip ? $trip->trip_code : null;
                 $tripRoute = $trip ? $trip->route : null;

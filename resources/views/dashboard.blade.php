@@ -1145,15 +1145,6 @@
 <!-- ========================================================================= -->
 <!-- Modal Edit Pengeluaran (Bisa dibuka dari Tabel atau Mobile Card Dashboard) -->
 <!-- ========================================================================= -->
-<div id="editExpenseModalDash" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-200">
-    <div class="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 translate-y-12 sm:translate-y-0">
-        
-        <!-- Header -->
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
-            <button type="button" onclick="closeEditExpenseModalDash()" class="w-9 h-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <div class="text-center">
 <div id="editExpenseModalDash" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 opacity-0 pointer-events-none transition-all duration-300 backdrop-blur-xs">
     <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 transform translate-y-12 transition-all duration-300 max-h-[90vh] overflow-y-auto">
         
