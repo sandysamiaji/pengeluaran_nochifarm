@@ -1154,19 +1154,31 @@
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
             <div class="text-center">
-                <h3 class="font-extrabold text-base text-slate-800">Edit Pengeluaran</h3>
-                <p id="editExpCodeBadgeDash" class="text-[11px] font-mono text-slate-400">#EXP-...</p>
+<div id="editExpenseModalDash" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 opacity-0 pointer-events-none transition-all duration-300 backdrop-blur-xs">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 transform translate-y-12 transition-all duration-300 max-h-[90vh] overflow-y-auto">
+        
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center">
+                    <i data-lucide="edit-3" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-slate-800 text-base">Edit Pengeluaran</h3>
+                    <span id="editExpCodeBadgeDash" class="text-xs text-slate-400 font-mono font-semibold">#EXP-...</span>
+                </div>
             </div>
-            <div class="w-9"></div>
+            <button type="button" onclick="closeEditExpenseModalDash()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
         </div>
 
-        <!-- Form Body -->
-        <form id="editExpenseFormDash" onsubmit="submitEditExpenseDash(event)" enctype="multipart/form-data" class="p-5 space-y-4 overflow-y-auto max-h-[75vh]">
+        <form id="editExpenseFormDash" onsubmit="submitEditExpenseDash(event)" class="space-y-4" enctype="multipart/form-data">
+            @csrf
             <input type="hidden" id="edit_expense_id_dash" name="id">
 
             <!-- 1. Tanggal -->
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tanggal</label>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tanggal Pengeluaran</label>
                 <input type="date" id="edit_date_dash" name="date" required
                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
             </div>
@@ -1194,8 +1206,8 @@
 
             <!-- 4. Keperluan -->
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Keperluan</label>
-                <input type="text" id="edit_purpose_dash" name="purpose" required
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Keperluan / Kebutuhan</label>
+                <input type="text" id="edit_purpose_dash" name="purpose" required maxlength="255"
                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
             </div>
 
@@ -1206,13 +1218,14 @@
                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-black text-rose-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
             </div>
 
-            <!-- 6. Metode Pembayaran -->
+            <!-- 6. Sumber Dana Pengeluaran -->
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Metode Pembayaran</label>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Sumber Dana Pengeluaran</label>
                 <select id="edit_payment_method_dash" name="payment_method"
                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
-                    <option value="Kas Tunai">Kas Tunai</option>
-                    <option value="Transfer Bank">Transfer Bank</option>
+                    <option value="Omzet Kandang">Omzet Kandang (Penghasilan / Kas Kandang)</option>
+                    <option value="Tunai Pribadi">Tunai Pribadi (Modal / Talangan Tunai)</option>
+                    <option value="Transfer Pribadi">Transfer Pribadi (Modal / Rekening Pribadi)</option>
                 </select>
             </div>
 
@@ -1785,6 +1798,10 @@
                                 <span class="text-slate-600 font-medium">Kandang (Non-Trip)</span>
                             </div>
                             <div class="flex justify-between py-1 border-b border-slate-200/60 items-center">
+                                <span class="text-slate-500">Sumber Dana</span>
+                                <span class="font-bold text-slate-800">${d.payment_method || 'Omzet Kandang'}</span>
+                            </div>
+                            <div class="flex justify-between py-1 border-b border-slate-200/60 items-center">
                                 <span class="text-slate-500">Keperluan</span>
                                 <span class="font-bold text-slate-800 text-right">${d.purpose}</span>
                             </div>
@@ -1803,12 +1820,12 @@
                 if (detailActions) {
                     if (type === 'pengeluaran') {
                         detailActions.innerHTML = `
-                            <button type="button" onclick="closeTransactionDetailModal(); openEditExpenseFromDashboard(${d.id});"
+                            <button type="button" onclick="closeTransactionDetailModal(); openEditExpenseFromDashboard(${d.id})"
                                 class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5">
                                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                 <span>Edit</span>
                             </button>
-                            <button type="button" onclick="closeTransactionDetailModal(); confirmDeleteExpense(${d.id}, '${d.transaction_code}');"
+                            <button type="button" onclick="closeTransactionDetailModal(); confirmDeleteExpense(${d.id}, '${d.transaction_code}')"
                                 class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5">
                                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                 <span>Hapus</span>
@@ -1823,12 +1840,12 @@
             })
             .catch(err => {
                 console.error(err);
-                content.innerHTML = `<p class="text-center text-rose-600 py-6 font-bold">Gagal memuat detail transaksi.</p>`;
+                content.innerHTML = `<p class="text-center text-rose-600 py-6 font-bold">Terjadi kesalahan saat memuat detail transaksi.</p>`;
             });
     }
 
     function closeTransactionDetailModal() {
-        const modal = document.getElementById('trxDetailModal');
+        const modal = document.getElementById('transactionDetailModal');
         modal.classList.add('opacity-0', 'pointer-events-none');
         modal.querySelector('.bg-white').classList.add('translate-y-12');
     }
@@ -1953,7 +1970,7 @@
                 document.getElementById('edit_date_dash').value = d.date;
                 document.getElementById('edit_purpose_dash').value = d.purpose;
                 document.getElementById('edit_amount_dash').value = 'Rp ' + Math.round(d.amount).toLocaleString('id-ID');
-                document.getElementById('edit_payment_method_dash').value = d.payment_method || 'Kas Tunai';
+                document.getElementById('edit_payment_method_dash').value = d.payment_method || 'Omzet Kandang';
                 document.getElementById('edit_notes_dash').value = d.notes || '';
 
                 document.getElementById('edit_category_dash').value = d.category;

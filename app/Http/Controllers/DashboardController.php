@@ -56,8 +56,14 @@ class DashboardController extends Controller
         // Pemisahan Saldo Kas Tunai vs Rekening Bank
         $tunaiPemasukan = $sales->filter(fn($s) => strtolower($s->payment_method) === 'tunai')->sum('total_amount');
         $transferPemasukan = $sales->filter(fn($s) => strtolower($s->payment_method) !== 'tunai')->sum('total_amount');
-        $tunaiPengeluaran = $expenses->filter(fn($e) => strtolower($e->payment_method ?? 'kas tunai') === 'kas tunai')->sum('amount');
-        $transferPengeluaran = $expenses->filter(fn($e) => strtolower($e->payment_method ?? 'kas tunai') !== 'kas tunai')->sum('amount');
+        $tunaiPengeluaran = $expenses->filter(function($e) {
+            $m = strtolower($e->payment_method ?? 'omzet kandang');
+            return in_array($m, ['kas tunai', 'tunai pribadi', 'omzet kandang']);
+        })->sum('amount');
+        $transferPengeluaran = $expenses->filter(function($e) {
+            $m = strtolower($e->payment_method ?? 'omzet kandang');
+            return in_array($m, ['transfer bank', 'transfer pribadi']);
+        })->sum('amount');
 
         $saldoKasTunai = $tunaiPemasukan - $tunaiPengeluaran;
         $saldoBankTransfer = $transferPemasukan - $transferPengeluaran;
@@ -73,12 +79,8 @@ class DashboardController extends Controller
                 })->implode(', ');
 
                 $penginputUser = $sale->user;
-                $penginputUsername = $penginputUser ? ($penginputUser->username ?: $penginputUser->name) : 'admin';
-                $penginputName = $penginputUser ? $penginputUser->name : 'Administrator';
-
                 $trip = $sale->trip;
                 $tripUser = $trip ? $trip->user : null;
-                $perjalananUsername = $tripUser ? ($tripUser->username ?: $tripUser->name) : ($trip ? 'Driver' : null);
                 $perjalananName = $tripUser ? $tripUser->name : ($trip ? 'Petugas Trip' : null);
                 $tripCode = $trip ? $trip->trip_code : null;
                 $tripRoute = $trip ? $trip->route : null;

@@ -120,25 +120,46 @@
                 </p>
             </div>
 
-            <!-- 6. Metode Pembayaran (Sumber Dana) -->
+            <!-- 6. Sumber Dana Pengeluaran -->
             <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                    <i data-lucide="credit-card" class="w-3.5 h-3.5 text-maroon-800"></i>
-                    <span>Sumber Dana / Metode Bayar</span>
+                    <i data-lucide="wallet-cards" class="w-3.5 h-3.5 text-maroon-800"></i>
+                    <span>Sumber Dana Pengeluaran</span>
                 </label>
-                <div class="grid grid-cols-2 gap-3">
-                    <label class="relative flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100/80 transition-colors has-[:checked]:border-maroon-800 has-[:checked]:bg-rose-50/50 has-[:checked]:text-maroon-900">
-                        <input type="radio" name="payment_method" value="Kas Tunai" checked class="accent-maroon-800 w-4 h-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <!-- 1. Omzet Kandang -->
+                    <label class="relative flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100/80 transition-all has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/70 has-[:checked]:text-emerald-950 has-[:checked]:shadow-xs">
+                        <input type="radio" name="payment_method" value="Omzet Kandang" checked class="accent-emerald-700 w-4 h-4 shrink-0">
                         <div class="leading-tight">
-                            <span class="text-xs font-bold block">Kas Tunai</span>
-                            <span class="text-[10px] text-slate-400">Petty Cash Kandang</span>
+                            <span class="text-xs font-bold block flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                                Omzet Kandang
+                            </span>
+                            <span class="text-[10px] text-slate-400 block mt-0.5">Penghasilan / Kas Kandang</span>
                         </div>
                     </label>
-                    <label class="relative flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100/80 transition-colors has-[:checked]:border-maroon-800 has-[:checked]:bg-rose-50/50 has-[:checked]:text-maroon-900">
-                        <input type="radio" name="payment_method" value="Transfer Bank" class="accent-maroon-800 w-4 h-4">
+
+                    <!-- 2. Tunai Pribadi -->
+                    <label class="relative flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100/80 transition-all has-[:checked]:border-sky-600 has-[:checked]:bg-sky-50/70 has-[:checked]:text-sky-950 has-[:checked]:shadow-xs">
+                        <input type="radio" name="payment_method" value="Tunai Pribadi" class="accent-sky-700 w-4 h-4 shrink-0">
                         <div class="leading-tight">
-                            <span class="text-xs font-bold block">Transfer Bank</span>
-                            <span class="text-[10px] text-slate-400">Rekening Usaha</span>
+                            <span class="text-xs font-bold block flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-sky-500 shrink-0"></span>
+                                Tunai Pribadi
+                            </span>
+                            <span class="text-[10px] text-slate-400 block mt-0.5">Modal / Talangan Tunai</span>
+                        </div>
+                    </label>
+
+                    <!-- 3. Transfer Pribadi -->
+                    <label class="relative flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100/80 transition-all has-[:checked]:border-purple-600 has-[:checked]:bg-purple-50/70 has-[:checked]:text-purple-950 has-[:checked]:shadow-xs">
+                        <input type="radio" name="payment_method" value="Transfer Pribadi" class="accent-purple-700 w-4 h-4 shrink-0">
+                        <div class="leading-tight">
+                            <span class="text-xs font-bold block flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-purple-500 shrink-0"></span>
+                                Transfer Pribadi
+                            </span>
+                            <span class="text-[10px] text-slate-400 block mt-0.5">Modal / Rekening Pribadi</span>
                         </div>
                     </label>
                 </div>
@@ -898,7 +919,7 @@
         document.getElementById('confirmPurpose').textContent = purposeVal;
         document.getElementById('confirmAmount').textContent = amountVal;
         
-        const paymentMethodVal = document.querySelector('input[name="payment_method"]:checked')?.value || 'Kas Tunai';
+        const paymentMethodVal = document.querySelector('input[name="payment_method"]:checked')?.value || 'Omzet Kandang';
         document.getElementById('confirmPaymentMethod').textContent = paymentMethodVal;
 
         document.getElementById('confirmNotes').textContent = notesVal || '-';

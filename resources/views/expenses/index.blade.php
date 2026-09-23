@@ -120,9 +120,22 @@
                         </td>
                         <td class="py-3.5 px-4">
                             <span class="font-extrabold text-slate-800 block">{{ $exp->purpose }}</span>
-                            @if($exp->notes)
-                                <span class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">{{ $exp->notes }}</span>
-                            @endif
+                            <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                                @php
+                                    $method = $exp->payment_method ?? 'Omzet Kandang';
+                                    $methodBadge = match($method) {
+                                        'Tunai Pribadi' => 'bg-sky-50 text-sky-700 border-sky-200/80',
+                                        'Transfer Pribadi' => 'bg-purple-50 text-purple-700 border-purple-200/80',
+                                        default => 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border {{ $methodBadge }}">
+                                    {{ $method }}
+                                </span>
+                                @if($exp->notes)
+                                    <span class="text-[11px] text-slate-400 line-clamp-1">&bull; {{ $exp->notes }}</span>
+                                @endif
+                            </div>
                         </td>
                         <td class="py-3.5 px-4 text-right whitespace-nowrap font-black text-rose-600 text-sm sm:text-base">
                             - {{ $exp->formatted_amount }}
@@ -338,18 +351,59 @@
             </button>
             <div class="text-center">
                 <h3 class="font-extrabold text-base text-slate-800">Edit Pengeluaran</h3>
-                <p id="editExpCodeBadge" class="text-[11px] font-mono text-slate-400">#EXP-...</p>
+<!-- Modal Detail Pengeluaran (Pop-up View) -->
+<div id="expenseDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 opacity-0 pointer-events-none transition-all duration-300 backdrop-blur-xs">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 transform translate-y-12 transition-all duration-300 max-h-[90vh] overflow-y-auto">
+        
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center justify-center">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                </div>
+                <h3 class="font-extrabold text-slate-800 text-sm sm:text-base">Detail Pengeluaran Kandang</h3>
             </div>
-            <div class="w-9"></div>
+            <button type="button" onclick="closeExpenseDetailModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
         </div>
 
-        <!-- Form Body -->
-        <form id="editExpenseForm" onsubmit="submitEditExpense(event)" enctype="multipart/form-data" class="p-5 space-y-4 overflow-y-auto max-h-[75vh]">
+        <div id="expDetailContent" class="py-4 space-y-4">
+            <!-- Populated dynamically via JS -->
+        </div>
+
+        <div id="expDetailActions" class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <!-- Action buttons populated dynamically -->
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Edit Pengeluaran (AJAX Dynamic) -->
+<div id="editExpenseModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 opacity-0 pointer-events-none transition-all duration-300 backdrop-blur-xs">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 transform translate-y-12 transition-all duration-300 max-h-[90vh] overflow-y-auto">
+        
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center">
+                    <i data-lucide="edit-3" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-slate-800 text-base">Edit Pengeluaran</h3>
+                    <span id="editExpCodeBadge" class="text-xs text-slate-400 font-mono font-semibold">#EXP-...</span>
+                </div>
+            </div>
+            <button type="button" onclick="closeEditExpenseModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <form id="editExpenseForm" onsubmit="submitEditExpense(event)" enctype="multipart/form-data" class="space-y-4">
+            @csrf
             <input type="hidden" id="edit_expense_id" name="id">
 
             <!-- 1. Tanggal -->
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tanggal</label>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tanggal Pengeluaran</label>
                 <input type="date" id="edit_date" name="date" required
                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
             </div>
@@ -377,8 +431,8 @@
 
             <!-- 4. Keperluan -->
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Keperluan</label>
-                <input type="text" id="edit_purpose" name="purpose" required
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Keperluan / Kebutuhan</label>
+                <input type="text" id="edit_purpose" name="purpose" required maxlength="255"
                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
             </div>
 
@@ -389,13 +443,14 @@
                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-black text-rose-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
             </div>
 
-            <!-- 6. Metode Pembayaran -->
+            <!-- 6. Sumber Dana Pengeluaran -->
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Metode Pembayaran</label>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Sumber Dana Pengeluaran</label>
                 <select id="edit_payment_method" name="payment_method"
                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-maroon-800">
-                    <option value="Kas Tunai">Kas Tunai</option>
-                    <option value="Transfer Bank">Transfer Bank</option>
+                    <option value="Omzet Kandang">Omzet Kandang (Penghasilan / Kas Kandang)</option>
+                    <option value="Tunai Pribadi">Tunai Pribadi (Modal / Talangan Tunai)</option>
+                    <option value="Transfer Pribadi">Transfer Pribadi (Modal / Rekening Pribadi)</option>
                 </select>
             </div>
 
@@ -416,18 +471,18 @@
                     </a>
                 </div>
                 <input type="file" id="edit_receipt_photo" name="receipt_photo" accept="image/*"
-                    class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                    class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
                 <span class="text-[10px] text-slate-400 block mt-1">Kosongkan jika tidak ingin mengubah foto nota.</span>
             </div>
 
             <!-- Footer Buttons -->
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+            <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
                 <button type="button" onclick="closeEditExpenseModal()"
                     class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors">
                     Batal
                 </button>
                 <button type="submit" id="btnSubmitEditExpense"
-                    class="px-5 py-2.5 bg-maroon-800 hover:bg-maroon-900 text-white rounded-xl font-bold text-xs shadow-md transition-colors flex items-center gap-1.5">
+                    class="px-5 py-2.5 bg-maroon-800 hover:bg-maroon-900 text-white rounded-xl font-bold text-xs shadow-md transition-all active:scale-95 flex items-center gap-1.5">
                     <i data-lucide="check" class="w-4 h-4"></i>
                     <span>Simpan Perubahan</span>
                 </button>
@@ -496,7 +551,7 @@
     // Detail Modal Controls
     // -------------------------------------------------------------
     function openExpenseDetailModal(id) {
-        const modal = document.getElementById('expDetailModal');
+        const modal = document.getElementById('expenseDetailModal');
         const content = document.getElementById('expDetailContent');
         const actions = document.getElementById('expDetailActions');
 
@@ -554,8 +609,8 @@
                             </span>
                         </div>
                         <div class="flex justify-between py-1 border-b border-slate-200/60 items-center">
-                            <span class="text-slate-500">Metode Bayar</span>
-                            <span class="font-semibold text-slate-700">${d.payment_method}</span>
+                            <span class="text-slate-500">Sumber Dana</span>
+                            <span class="font-semibold text-slate-700">${d.payment_method || 'Omzet Kandang'}</span>
                         </div>
                         <div class="flex justify-between py-1 border-b border-slate-200/60 items-center">
                             <span class="text-slate-500">Keperluan</span>
@@ -588,12 +643,12 @@
             })
             .catch(err => {
                 console.error(err);
-                content.innerHTML = `<p class="text-center text-rose-600 py-6 font-bold">Gagal memuat detail pengeluaran.</p>`;
+                content.innerHTML = `<p class="text-center text-rose-600 py-6 font-bold">Terjadi kesalahan saat memuat data pengeluaran.</p>`;
             });
     }
 
     function closeExpenseDetailModal() {
-        const modal = document.getElementById('expDetailModal');
+        const modal = document.getElementById('expenseDetailModal');
         modal.classList.add('opacity-0', 'pointer-events-none');
         modal.querySelector('.bg-white').classList.add('translate-y-12');
     }
@@ -625,7 +680,7 @@
                 document.getElementById('edit_date').value = d.date;
                 document.getElementById('edit_purpose').value = d.purpose;
                 document.getElementById('edit_amount').value = 'Rp ' + Math.round(d.amount).toLocaleString('id-ID');
-                document.getElementById('edit_payment_method').value = d.payment_method || 'Kas Tunai';
+                document.getElementById('edit_payment_method').value = d.payment_method || 'Omzet Kandang';
                 document.getElementById('edit_notes').value = d.notes || '';
 
                 // Set Kategori & populate subkategori
