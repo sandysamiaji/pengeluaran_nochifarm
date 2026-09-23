@@ -115,6 +115,9 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased bg-slate-50 text-slate-800">
 
+    <!-- Top Loading Progress Bar SPA -->
+    <div id="spaProgressBar" class="fixed top-0 left-0 h-1 bg-gradient-to-r from-amber-400 via-nochi-orange to-rose-600 z-[9999] transition-all duration-300 pointer-events-none opacity-0 shadow-sm shadow-orange-500/50" style="width: 0%;"></div>
+
     <!-- Top App Bar / Header (Presisi Sesuai Mockup) -->
     <header class="bg-maroon-gradient text-white sticky top-0 z-30 shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -138,7 +141,7 @@
                 </div>
 
                 <!-- Desktop Navigation Menu -->
-                <nav class="hidden md:flex items-center gap-2 bg-black/15 p-1 rounded-xl backdrop-blur-sm border border-white/10">
+                <nav id="desktopNavMenu" class="hidden md:flex items-center gap-2 bg-black/15 p-1 rounded-xl backdrop-blur-sm border border-white/10">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold {{ request()->routeIs('dashboard') ? 'bg-white text-maroon-900 shadow-sm' : 'text-rose-100 hover:text-white hover:bg-white/10' }} transition-all">
                         <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                         <span>Dashboard Transaksi</span>
@@ -192,7 +195,7 @@
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </div>
-        <div class="p-4 flex-1 overflow-y-auto space-y-2">
+        <div id="mobileDrawerMenu" class="p-4 flex-1 overflow-y-auto space-y-2">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold {{ request()->routeIs('dashboard') ? 'bg-rose-50 text-maroon-800' : 'text-slate-700 hover:bg-slate-50' }}">
                 <i data-lucide="home" class="w-5 h-5 text-maroon-700"></i>
                 <span>Beranda & Transaksi</span>
@@ -220,7 +223,7 @@
     </div>
 
     <!-- Flash Notifications -->
-    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-3">
+    <div id="flashNotificationContainer" class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 mt-3">
         @if(session('success'))
             <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl flex items-center gap-3 text-sm shadow-sm animate-fade-in">
                 <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600 shrink-0"></i>
@@ -236,13 +239,13 @@
         @endif
     </div>
 
-    <!-- Main Content -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-28 md:pb-12">
+    <!-- Main Content Container -->
+    <main id="mainContent" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-28 md:pb-12 transition-opacity duration-150">
         @yield('content')
     </main>
 
     <!-- Bottom Navigation Bar Mobile (Presisi Sesuai Mockup) -->
-    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] sm:max-w-md z-40 bg-white border-t border-slate-200 shadow-2xl px-2 py-1 md:hidden">
+    <nav id="mobileBottomNav" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] sm:max-w-md z-40 bg-white border-t border-slate-200 shadow-2xl px-2 py-1 md:hidden">
         <div class="grid grid-cols-5 items-center text-center">
             
             <!-- 1. Beranda -->
@@ -298,6 +301,7 @@
         function toggleMobileDrawer() {
             const drawer = document.getElementById('mobileDrawer');
             const backdrop = document.getElementById('mobileDrawerBackdrop');
+            if (!drawer || !backdrop) return;
             if (drawer.classList.contains('translate-x-full')) {
                 drawer.classList.remove('translate-x-full');
                 backdrop.classList.remove('opacity-0', 'pointer-events-none');
@@ -306,6 +310,203 @@
                 backdrop.classList.add('opacity-0', 'pointer-events-none');
             }
         }
+
+        // -------------------------------------------------------------
+        // SPA Instant Navigation (Ganti Halaman / Pagination Tanpa Refresh)
+        // -------------------------------------------------------------
+        let isSpaNavigating = false;
+
+        function startProgressBar() {
+            const bar = document.getElementById('spaProgressBar');
+            if (!bar) return;
+            bar.style.transition = 'width 0.25s ease-out, opacity 0.2s ease';
+            bar.style.opacity = '1';
+            bar.style.width = '35%';
+            setTimeout(() => {
+                if (bar.style.opacity === '1' && parseFloat(bar.style.width) < 80) {
+                    bar.style.width = '75%';
+                }
+            }, 150);
+        }
+
+        function finishProgressBar() {
+            const bar = document.getElementById('spaProgressBar');
+            if (!bar) return;
+            bar.style.width = '100%';
+            setTimeout(() => {
+                bar.style.opacity = '0';
+                setTimeout(() => {
+                    bar.style.width = '0%';
+                }, 250);
+            }, 150);
+        }
+
+        async function spaNavigate(url, pushState = true, scrollTarget = null) {
+            if (isSpaNavigating) return;
+            isSpaNavigating = true;
+            startProgressBar();
+
+            // Tutup drawer mobile jika sedang terbuka
+            const drawer = document.getElementById('mobileDrawer');
+            if (drawer && !drawer.classList.contains('translate-x-full')) {
+                toggleMobileDrawer();
+            }
+
+            const mainContent = document.getElementById('mainContent');
+            if (mainContent) {
+                mainContent.classList.add('opacity-40');
+            }
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok && response.status !== 404 && response.status !== 422) {
+                    window.location.href = url;
+                    return;
+                }
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // 1. Update Title Dokumen
+                document.title = doc.title;
+
+                // 2. Sinkronkan Navigasi (Desktop, Drawer, Bottom Bar) agar status aktif terupdate
+                const newDesktopNav = doc.getElementById('desktopNavMenu');
+                const currentDesktopNav = document.getElementById('desktopNavMenu');
+                if (newDesktopNav && currentDesktopNav) {
+                    currentDesktopNav.innerHTML = newDesktopNav.innerHTML;
+                }
+
+                const newDrawerMenu = doc.getElementById('mobileDrawerMenu');
+                const currentDrawerMenu = document.getElementById('mobileDrawerMenu');
+                if (newDrawerMenu && currentDrawerMenu) {
+                    currentDrawerMenu.innerHTML = newDrawerMenu.innerHTML;
+                }
+
+                const newBottomNav = doc.getElementById('mobileBottomNav');
+                const currentBottomNav = document.getElementById('mobileBottomNav');
+                if (newBottomNav && currentBottomNav) {
+                    currentBottomNav.innerHTML = newBottomNav.innerHTML;
+                }
+
+                // 3. Update Flash Notification jika ada
+                const newFlash = doc.getElementById('flashNotificationContainer');
+                const currentFlash = document.getElementById('flashNotificationContainer');
+                if (newFlash && currentFlash) {
+                    currentFlash.innerHTML = newFlash.innerHTML;
+                }
+
+                // 4. Update Konten Utama Halaman
+                const newMain = doc.getElementById('mainContent');
+                if (newMain && mainContent) {
+                    mainContent.innerHTML = newMain.innerHTML;
+                    mainContent.classList.remove('opacity-40');
+                }
+
+                // 5. Update Browser URL History
+                if (pushState) {
+                    window.history.pushState({ spa: true, url: url }, '', url);
+                }
+
+                // 6. Eksekusi Script Baru yang ada di halaman target
+                const scripts = doc.querySelectorAll('main script, body script:not([src])');
+                scripts.forEach(oldScript => {
+                    if (oldScript.textContent.includes('spaNavigate')) return;
+                    const newScript = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.textContent = oldScript.textContent;
+                    document.body.appendChild(newScript);
+                    setTimeout(() => newScript.remove(), 50);
+                });
+
+                // 7. Refresh Icons Lucide
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+
+                // 8. Trigger Global Event untuk Inisialisasi Chart dsb
+                window.dispatchEvent(new CustomEvent('page:loaded'));
+
+                // 9. Smooth Scroll ke Elemen Target / Atas Halaman
+                if (scrollTarget) {
+                    if (typeof scrollTarget === 'string') {
+                        const el = document.querySelector(scrollTarget);
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else if (scrollTarget instanceof HTMLElement) {
+                        scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+
+            } catch (error) {
+                console.error('SPA Navigation Error:', error);
+                window.location.href = url;
+            } finally {
+                isSpaNavigating = false;
+                finishProgressBar();
+            }
+        }
+
+        // Intercept Klik Semua Link Navigasi & Pagination Internal
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link || !link.href) return;
+
+            // Kondisi dikecualikan (external, new tab, download, modal trigger, js link)
+            if (link.target === '_blank' || link.hasAttribute('download') || link.hasAttribute('data-no-spa')) return;
+            if (link.href.startsWith('javascript:') || link.getAttribute('href')?.startsWith('#')) return;
+
+            // Pastikan domain sama
+            const url = new URL(link.href, window.location.origin);
+            if (url.origin !== window.location.origin) return;
+
+            // Kecualikan link download file / cetak laporan
+            if (url.pathname.includes('/laporan/export-csv') || url.pathname.includes('/laporan/cetak')) return;
+
+            e.preventDefault();
+
+            // Jika link adalah paginasi (?page=X), scroll lembut ke kontainer data
+            const isPagination = url.searchParams.has('page');
+            let scrollTarget = null;
+            if (isPagination) {
+                scrollTarget = link.closest('section') || link.closest('.farm-card') || '#mainContent';
+            }
+
+            spaNavigate(url.href, true, scrollTarget);
+        });
+
+        // Intercept Submit Form Filter GET (Pencarian & Filter Tanggal)
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (!form || form.method.toUpperCase() !== 'GET') return;
+            if (form.hasAttribute('data-no-spa')) return;
+
+            e.preventDefault();
+            const formData = new FormData(form);
+            const searchParams = new URLSearchParams();
+            for (const [key, value] of formData.entries()) {
+                if (value !== '') {
+                    searchParams.append(key, value);
+                }
+            }
+
+            const actionUrl = new URL(form.action || window.location.href, window.location.origin);
+            actionUrl.search = searchParams.toString();
+
+            spaNavigate(actionUrl.href, true, form.closest('section') || '#mainContent');
+        });
+
+        // Handle Tombol Back / Forward di Browser
+        window.addEventListener('popstate', function() {
+            spaNavigate(window.location.href, false);
+        });
     </script>
     @stack('scripts')
 </body>

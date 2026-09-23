@@ -2035,13 +2035,115 @@
         });
     }
 
+    const startInput = document.getElementById('travelokaStartDate');
+    const endInput = document.getElementById('travelokaEndDate');
+
+    if (startInput) startInput.addEventListener('change', updateDayLabels);
+    if (endInput) endInput.addEventListener('change', updateDayLabels);
+
+    function updateDayLabels() {
+        const sInput = document.getElementById('travelokaStartDate');
+        const eInput = document.getElementById('travelokaEndDate');
+        if (!sInput || !eInput) return;
+
+        const sVal = sInput.value;
+        const eVal = eInput.value;
+
+        const sLabel = document.getElementById('startDayLabel');
+        const eLabel = document.getElementById('endDayLabel');
+        const durText = document.getElementById('durationText');
+
+        if (sVal) {
+            const d1 = new Date(sVal);
+            if (sLabel) sLabel.textContent = d1.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+        } else {
+            if (sLabel) sLabel.textContent = 'Pilih tanggal awal';
+        }
+
+        if (eVal) {
+            const d2 = new Date(eVal);
+            if (eLabel) eLabel.textContent = d2.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+        } else {
+            if (eLabel) eLabel.textContent = 'Pilih tanggal akhir';
+        }
+
+        if (sVal && eVal && durText) {
+            const diffMs = new Date(eVal) - new Date(sVal);
+            const days = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
+            if (days > 0) {
+                durText.innerHTML = `Rentang dipilih: <strong>${days} Hari</strong>. Tekan <strong>Terapkan Filter</strong> untuk mengaktifkan.`;
+            } else {
+                durText.innerHTML = `<span class="text-rose-600 font-bold">Tanggal selesai tidak boleh sebelum tanggal mulai!</span>`;
+            }
+        }
+    }
+
+    function setPresetDateRange(preset) {
+        const now = new Date();
+        const formatDate = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        let start = '', end = '';
+
+        if (preset === 'today') {
+            start = formatDate(now);
+            end = start;
+        } else if (preset === 'yesterday') {
+            const y = new Date();
+            y.setDate(y.getDate() - 1);
+            start = formatDate(y);
+            end = start;
+        } else if (preset === 'this_week') {
+            const d = new Date();
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(d.setDate(diff));
+            start = formatDate(monday);
+            end = formatDate(new Date());
+        } else if (preset === 'this_month') {
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            start = formatDate(firstDay);
+            end = formatDate(now);
+        } else if (preset === 'last_month') {
+            const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+            start = formatDate(firstDay);
+            end = formatDate(lastDay);
+        }
+
+        const sInput = document.getElementById('travelokaStartDate');
+        const eInput = document.getElementById('travelokaEndDate');
+        if (sInput && eInput) {
+            sInput.value = start;
+            eInput.value = end;
+            updateDayLabels();
+        }
+    }
+
+    function resetDateFilter() {
+        const sInput = document.getElementById('travelokaStartDate');
+        const eInput = document.getElementById('travelokaEndDate');
+        if (sInput && eInput) {
+            sInput.value = '';
+            eInput.value = '';
+            updateDayLabels();
+        }
+    }
+
     // -------------------------------------------------------------
     // Chart.js Visualizations (Cashflow Trend & Category Doughnut)
     // -------------------------------------------------------------
-    document.addEventListener('DOMContentLoaded', function() {
+    function initDashboardCharts() {
         // 1. Tren Arus Kas Bulanan
         const ctxTrend = document.getElementById('cashflowTrendChart');
         if (ctxTrend && typeof Chart !== 'undefined') {
+            const existingTrend = Chart.getChart('cashflowTrendChart');
+            if (existingTrend) existingTrend.destroy();
+
             const chartLabels = {!! json_encode($chartLabels) !!};
             const chartIncome = {!! json_encode($chartIncome) !!};
             const chartExpense = {!! json_encode($chartExpense) !!};
@@ -2104,6 +2206,9 @@
         // 2. Komposisi Kategori Pengeluaran (Doughnut)
         const ctxCategory = document.getElementById('expenseCategoryChart');
         if (ctxCategory && typeof Chart !== 'undefined') {
+            const existingCat = Chart.getChart('expenseCategoryChart');
+            if (existingCat) existingCat.destroy();
+
             const catData = {!! json_encode($categoryBreakdown) !!};
             const labels = catData.map(c => c.category);
             const totals = catData.map(c => c.total);
@@ -2139,6 +2244,13 @@
                 }
             });
         }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDashboardCharts);
+    } else {
+        initDashboardCharts();
+    }
+    window.addEventListener('page:loaded', initDashboardCharts);
 </script>
 @endpush
