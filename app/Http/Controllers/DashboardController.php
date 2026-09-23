@@ -451,14 +451,23 @@ class DashboardController extends Controller
     {
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
-        $isFilterActive = !empty($startDate) && !empty($endDate);
+        $isFilterActive = false;
 
         $salesQuery = Sale::with(['items', 'user', 'trip.user'])->orderBy('date', 'asc');
         $expensesQuery = Expense::with('user')->orderBy('date', 'asc');
 
-        if ($isFilterActive) {
+        if (!empty($startDate) && !empty($endDate)) {
             $salesQuery->whereBetween('date', [$startDate, $endDate]);
             $expensesQuery->whereBetween('date', [$startDate, $endDate]);
+            $isFilterActive = true;
+        } elseif (!empty($startDate)) {
+            $salesQuery->where('date', '>=', $startDate);
+            $expensesQuery->where('date', '>=', $startDate);
+            $isFilterActive = true;
+        } elseif (!empty($endDate)) {
+            $salesQuery->where('date', '<=', $endDate);
+            $expensesQuery->where('date', '<=', $endDate);
+            $isFilterActive = true;
         }
 
         $sales = $salesQuery->get();
