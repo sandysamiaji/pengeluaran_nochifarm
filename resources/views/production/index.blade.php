@@ -408,7 +408,7 @@
                         $crates = (float) $prod->crates_count;
                         $wholePeti = (int) floor($crates);
                         $remKg = round(($crates - $wholePeti) * 10, 1);
-                        $username = $prod->user ? ($prod->user->username ?: $prod->user->name) : 'petugas';
+                        $username = $prod->user ? ($prod->user->username ?: strtolower(str_replace(' ', '', $prod->user->name))) : 'petugas';
                         $fullname = $prod->user ? $prod->user->name : 'Petugas Kandang';
                     @endphp
                     <tr class="hover:bg-amber-50/40 transition-colors group">
@@ -466,10 +466,10 @@
                         <td class="py-3.5 px-4 whitespace-nowrap">
                             <div class="flex items-center gap-2.5">
                                 <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-100 to-orange-50 text-amber-900 border border-amber-200 font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                                    {{ strtoupper(substr($username, 0, 1)) }}
+                                    {{ strtoupper(substr($fullname, 0, 1)) }}
                                 </div>
                                 <div>
-                                    <span class="text-xs font-bold text-slate-800 font-mono block">@{{ $username }}</span>
+                                    <span class="text-xs font-bold text-slate-800 font-mono block">{{ '@' . $username }}</span>
                                     <span class="text-[10.5px] text-slate-400 font-medium block">{{ $fullname }}</span>
                                 </div>
                             </div>
@@ -525,7 +525,7 @@
             $crates = (float) $prod->crates_count;
             $wholePeti = (int) floor($crates);
             $remKg = round(($crates - $wholePeti) * 10, 1);
-            $username = $prod->user ? ($prod->user->username ?: $prod->user->name) : 'petugas';
+            $username = $prod->user ? ($prod->user->username ?: strtolower(str_replace(' ', '', $prod->user->name))) : 'petugas';
             $fullname = $prod->user ? $prod->user->name : 'Petugas Kandang';
         @endphp
         <div onclick="openProductionDetailModal({{ $prod->id }})"
@@ -589,9 +589,9 @@
                 <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
                     <div class="flex items-center gap-1.5">
                         <div class="w-5 h-5 rounded-full bg-amber-100 text-amber-900 font-black text-[10px] flex items-center justify-center shrink-0">
-                            {{ strtoupper(substr($username, 0, 1)) }}
+                            {{ strtoupper(substr($fullname, 0, 1)) }}
                         </div>
-                        <span class="text-[11px] font-bold text-slate-700 font-mono">@{{ $username }}</span>
+                        <span class="text-[11px] font-bold text-slate-700 font-mono">{{ '@' . $username }}</span>
                     </div>
 
                     <span class="text-[10.5px] text-slate-400 font-medium">
