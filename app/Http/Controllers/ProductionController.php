@@ -60,13 +60,13 @@ class ProductionController extends Controller
         $totalCrates = (float) (clone $query)->sum('crates_count');
         $totalWeightKg = (float) (clone $query)->sum('weight_kg');
 
-        // Konversi Peti & Kg: 1 Peti = 10 Kg
-        $intPeti = (int) floor($totalCrates);
-        $sisaKg = round(($totalCrates - $intPeti) * 10, 1);
-        if ($sisaKg >= 10) {
-            $intPeti += (int) floor($sisaKg / 10);
-            $sisaKg = round($sisaKg - (floor($sisaKg / 10) * 10), 1);
-        }
+        // Konversi Peti & Kg: 1 Peti = 10 Kg (kg yang diinput ikut dinaikkan jadi peti)
+        $totalKgAll = round(($totalCrates * 10) + $totalWeightKg, 1);
+        $intPeti = (int) floor($totalKgAll / 10);
+        $sisaKg = round($totalKgAll - ($intPeti * 10), 1);
+
+        // Stok telur gudang riil (produksi + masuk - terjual - rusak), sama dengan angka di dashboard
+        $stokGudang = \App\Services\WarehouseInventoryService::getInventorySummary()['telur'];
 
         // Produksi Hari Ini Realtime
         $today = Carbon::today()->toDateString();
@@ -94,6 +94,7 @@ class ProductionController extends Controller
             'totalCrates',
             'totalWeightKg',
             'intPeti',
+            'stokGudang',
             'sisaKg',
             'todayEggs',
             'todayGoodEggs',

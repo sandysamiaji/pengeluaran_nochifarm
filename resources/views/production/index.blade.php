@@ -65,7 +65,7 @@
             <div>
                 <!-- Top Header: Label & Icon -->
                 <div class="flex items-center justify-between gap-2">
-                    <span class="text-[10.5px] font-extrabold text-slate-400 uppercase tracking-wider">Total Telur Terkumpul</span>
+                    <span class="text-[10.5px] font-extrabold text-slate-400 uppercase tracking-wider">Stok Telur Gudang</span>
                     <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-50 text-amber-700 border border-amber-200/80 shadow-inner flex items-center justify-center group-hover:scale-105 transition-transform">
                         <svg class="w-5 h-5 fill-amber-500 drop-shadow-2xs" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 2C8.13 2 5 6.48 5 12c0 4.42 3.13 8 7 8s7-3.58 7-8c0-5.52-3.13-10-7-10z"/>
@@ -75,13 +75,21 @@
 
                 <!-- Main Number -->
                 <div class="mt-3">
-                    <div class="flex items-baseline gap-1.5">
-                        <span class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-mono">
-                            {{ number_format($totalEggs, 0, ',', '.') }}
+                    <div class="flex flex-wrap items-baseline gap-1.5">
+                        <span class="text-3xl sm:text-4xl font-black {{ ($stokGudang['is_defisit'] ?? false) ? 'text-rose-600' : 'text-slate-900' }} tracking-tight font-mono">
+                            {{ number_format($stokGudang['stok_peti'] ?? 0, 0, ',', '.') }}
                         </span>
-                        <span class="text-xs sm:text-sm font-extrabold text-slate-400">Butir</span>
+                        <span class="text-xs sm:text-sm font-extrabold text-slate-500">Peti</span>
+                        @if(($stokGudang['stok_kg'] ?? 0) != 0)
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-amber-100/80 text-amber-900 border border-amber-300 shadow-2xs">
+                                + {{ number_format($stokGudang['stok_kg'], 1, ',', '.') }} Kg
+                            </span>
+                        @endif
                     </div>
-                    <span class="text-[11px] text-slate-400 font-medium block mt-0.5">Akumulasi seluruh butir hasil panen</span>
+                    <span class="text-[11px] text-slate-400 font-medium block mt-0.5">Sisa gudang: produksi + masuk − terjual − rusak</span>
+                    <span class="text-[11px] text-slate-500 font-semibold block mt-1">
+                        Produksi tercatat: {{ number_format($totalEggs, 0, ',', '.') }} butir
+                    </span>
                 </div>
 
                 <!-- Visual Ratio Bar (Baik vs Pecah) -->

@@ -260,8 +260,9 @@ class ExpenseController extends Controller
             });
         }
 
-        $expenses = $query->paginate(10)->withQueryString();
+        // Hitung total sebelum paginate(): paginate mengubah query (limit/offset) sehingga sum di halaman >1 jadi 0
         $totalNominal = (clone $query)->sum('amount');
+        $expenses = $query->paginate(10)->withQueryString();
         $categories = self::getCategoriesData();
 
         return view('expenses.index', compact('expenses', 'totalNominal', 'categories', 'startDate', 'endDate', 'category', 'search'));
