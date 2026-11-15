@@ -332,6 +332,7 @@ class ExpenseController extends Controller
             'receipt_photo' => $receiptPath,
             'user_id' => auth()->id() ?? 1,
         ]);
+        self::syncFeedStock($expense);
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -472,6 +473,7 @@ class ExpenseController extends Controller
         }
         $expense->notes = $validated['notes'] ?? null;
         $expense->save();
+        self::syncFeedStock($expense);
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -491,6 +493,18 @@ class ExpenseController extends Controller
     }
 
     /**
+     * Sinkron pembelian pakan ke stok Gudang Pakan; gagal sinkron tidak boleh menggagalkan simpan pengeluaran.
+     */
+    protected static function syncFeedStock(Expense $expense): void
+    {
+        try {
+            \App\Services\FeedStockSync::sync($expense);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
+    /**
      * Hapus Pengeluaran
      */
     public function destroy($id)
@@ -503,6 +517,11 @@ class ExpenseController extends Controller
         }
 
         $code = $expense->transaction_code;
+        try {
+            \App\Services\FeedStockSync::remove($expense);
+        } catch (\Throwable $e) {
+            report($e);
+        }
         $expense->delete();
 
         if (request()->ajax() || request()->wantsJson()) {

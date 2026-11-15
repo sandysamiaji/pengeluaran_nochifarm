@@ -320,55 +320,6 @@
 
 </div>
 
-<!-- ========================================================================= -->
-<!-- Modal Detail Pengeluaran (Tampilan Mewah Slide-Up di Mobile) -->
-<!-- ========================================================================= -->
-<div id="expDetailModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-200">
-    <div class="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 translate-y-12 sm:translate-y-0">
-        
-        <!-- Header -->
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
-            <button type="button" onclick="closeExpenseDetailModal()" class="w-9 h-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <h3 class="font-extrabold text-base text-slate-800">Detail Pengeluaran Kandang</h3>
-            <div class="w-9"></div>
-        </div>
-
-        <!-- Content Body (Dynamically populated) -->
-        <div id="expDetailContent" class="p-5 overflow-y-auto max-h-[70vh] space-y-4 text-xs sm:text-sm">
-            <div class="text-center py-8 text-slate-400">
-                <span class="animate-spin inline-block mr-2">&#9696;</span> Memuat data pengeluaran...
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div id="expDetailFooter" class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-1.5" id="expDetailActions">
-                <!-- Tombol Edit & Hapus akan disisipkan di sini -->
-            </div>
-            <button type="button" onclick="closeExpenseDetailModal()"
-                class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs transition-colors">
-                Tutup
-            </button>
-        </div>
-
-    </div>
-</div>
-
-<!-- ========================================================================= -->
-<!-- Modal Edit Pengeluaran Kandang -->
-<!-- ========================================================================= -->
-<div id="editExpenseModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-200">
-    <div class="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 translate-y-12 sm:translate-y-0">
-        
-        <!-- Header -->
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
-            <button type="button" onclick="closeEditExpenseModal()" class="w-9 h-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <div class="text-center">
-                <h3 class="font-extrabold text-base text-slate-800">Edit Pengeluaran</h3>
 <!-- Modal Detail Pengeluaran (Pop-up View) -->
 <div id="expenseDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 opacity-0 pointer-events-none transition-all duration-300 backdrop-blur-xs">
     <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 transform translate-y-12 transition-all duration-300 max-h-[90vh] overflow-y-auto">
@@ -469,6 +420,8 @@
                     <option value="Omzet Kandang">Omzet Kandang (Penghasilan / Kas Kandang)</option>
                     <option value="Tunai Pribadi">Tunai Pribadi (Modal / Talangan Tunai)</option>
                     <option value="Transfer Pribadi">Transfer Pribadi (Modal / Rekening Pribadi)</option>
+                    <option value="Kas Tunai">Kas Tunai</option>
+                    <option value="Transfer Bank">Transfer Bank</option>
                 </select>
             </div>
 
